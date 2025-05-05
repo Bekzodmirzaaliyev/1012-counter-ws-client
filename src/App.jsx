@@ -4,34 +4,16 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import io from "socket.io-client"
 
-const socket = io('https://one012-counter-ws-server.onrender.com/')
+const socket = io('http://localhost:8000')
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState("JUrat bich")
 
-  useEffect(() => {
-    socket.on('counterUpdate', (value) => {
-      setCount(value)
-    })
 
-    return () => {
-      socket.off('counterUpdate')
-    }
-  }, [])
-
-  const increment = () => {
-    socket.emit("increment")
-  }
-
-  const decrement = () => {
-    socket.emit('decrement')
-  }
 
   return (
     <>
-      <p>SON: {count}</p>
-      <button className='' onClick={() => increment()}>Increment</button>
-      <button className='' onClick={() => decrement()}>Decrement</button>
+      <p onClick={() => setCount("AbduLahm")}>{count}</p>
     </>
   )
 }
