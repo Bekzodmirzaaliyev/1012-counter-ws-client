@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { registerUser } from "../redux/slices/authSlice";
 import { FaUserAlt, FaLock, FaEnvelope } from "react-icons/fa";
 const illustration = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwoOybZyR8PaEZi9DSPbDYOd4HYLctFEvd2w&s"
+
+
 export default function Register() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -21,8 +23,23 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await dispatch(registerUser(formData));
-    if (res.meta.requestStatus === "fulfilled") navigate("/login");
+    try {
+      const request = await fetch("http://localhost:8000/api/v1/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const response = await request.json()
+      console.log("Response: ", response)
+      dispatch()
+    } catch (e) {
+      console.log("Error: ", e)
+    }
+    // const res = await dispatch(registerUser(formData));
+    // if (res.meta.requestStatus === "fulfilled") navigate("/login");
   };
 
   return (

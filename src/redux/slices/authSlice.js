@@ -16,6 +16,17 @@ const authSlice = createSlice({
     user: null,
     loading: false,
   },
+  reducers: {
+    login: (state, action)=> {
+
+    },
+    register: (state, action)=> {
+      
+    },
+    logout: (state, action) => {
+
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(registerUser.pending, (state) => {
