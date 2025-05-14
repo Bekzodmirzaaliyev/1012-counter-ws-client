@@ -22,8 +22,11 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await dispatch(loginUser(formData));
-    if (res.meta.requestStatus === "fulfilled") navigate("/");
+    try {
+      
+    } catch (error) {
+
+    } 
   };
 
   return (
