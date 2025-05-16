@@ -1,14 +1,14 @@
 
 // src/pages/Login.jsx
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../redux/slices/authSlice";
+import { login, loginUser } from "../redux/slices/authSlice";
 import { FaLock, FaEnvelope } from "react-icons/fa";
 const illustration = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwoOybZyR8PaEZi9DSPbDYOd4HYLctFEvd2w&s";
 
 export default function Login() {
-
+  const isAuth = useSelector(state => state.auth.isAuth)
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -32,16 +32,19 @@ export default function Login() {
       })
 
       const response = await request.json()
-      console.log("Response ", response)
-      dispatch()
-    } catch (error) {
+      console.log("Response: ", response)
+      dispatch(login(response))
+      navigate("/")
+    } catch (e) {
       console.log("Error: ", e)
+    } finally {
+      console.log("STATE: ", isAuth)
     }
   };
 
   return (
     <div className="min-h-screen text-base-300 flex items-center justify-center bg-gray-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl flex p-6 w-full max-w-4xl">
+      <div className="bg-base-content rounded-2xl shadow-xl flex p-6 w-full max-w-4xl">
         <div className="w-1/2 hidden md:flex items-center justify-center">
           <img src={illustration} alt="login" className="w-3/4" />
         </div>
@@ -55,7 +58,7 @@ export default function Login() {
             <FaLock className="mr-2 text-gray-600" />
             <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Password" className="w-full outline-none text-black" />
           </div>
-          <button type="submit" className="btn btn-soft btn-primary">Войти</button>
+          <button type="submit" className="btn btn-soft btn-primary" >Войти</button>
         </form>
       </div>
     </div>

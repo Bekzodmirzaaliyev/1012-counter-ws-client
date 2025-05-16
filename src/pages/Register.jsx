@@ -2,8 +2,8 @@
 // src/pages/Register.jsx
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate  } from "react-router-dom";
-import { registerUser } from "../redux/slices/authSlice";
+import { useNavigate } from "react-router-dom";
+import { register } from "../redux/slices/authSlice";
 import { FaUserAlt, FaLock, FaEnvelope } from "react-icons/fa";
 const illustration = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwoOybZyR8PaEZi9DSPbDYOd4HYLctFEvd2w&s"
 
@@ -34,7 +34,8 @@ export default function Register() {
 
       const response = await request.json()
       console.log("Response: ", response)
-      dispatch()
+      dispatch(register(response))
+      navigate("/")
     } catch (e) {
       console.log("Error: ", e)
     }
