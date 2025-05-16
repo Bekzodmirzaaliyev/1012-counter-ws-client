@@ -53,15 +53,15 @@ export default function Register() {
           <h2 className="text-2xl font-bold text-center mb-4 text-primary">Регистрация</h2>
           <div className="flex items-center border p-2 rounded">
             <FaUserAlt className="mr-2 text-gray-500" />
-            <input name="username" value={formData.username} onChange={handleChange} required placeholder="Username" className="w-full outline-none" />
+            <input name="username" value={formData.username} onChange={handleChange} required placeholder="Username" className="w-full text-black outline-none" />
           </div>
           <div className="flex items-center border p-2 rounded">
             <FaEnvelope className="mr-2 text-gray-500" />
-            <input name="email" value={formData.email} onChange={handleChange} required placeholder="Email" className="w-full outline-none" />
+            <input name="email" value={formData.email} onChange={handleChange} required placeholder="Email" className="w-full  text-black outline-none" />
           </div>
           <div className="flex items-center border p-2 rounded">
             <FaLock className="mr-2 text-gray-500" />
-            <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Password" className="w-full outline-none" />
+            <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Password" className="w-full  text-black outline-none" />
           </div>
           <button type="submit" className="btn btn-primary btn-soft">Зарегистрироваться</button>
         </form>
