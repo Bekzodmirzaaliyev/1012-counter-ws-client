@@ -8,10 +8,10 @@ const PrivateRouter = ({ children }) => {
 
 
     console.log("DEBUG:", isAuth)
-
-
     useEffect(() => {
-        navigate("/login")
+        if (!isAuth) {
+            navigate("/login")
+        }
     }, [isAuth])
 
     return children

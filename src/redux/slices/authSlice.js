@@ -37,6 +37,7 @@ const authSlice = createSlice({
       state.isAuth = true;
     },
   },
+  
   extraReducers: (builder) => {
     builder
       .addCase(registerUser.pending, (state) => {
