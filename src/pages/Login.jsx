@@ -22,8 +22,21 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await dispatch(loginUser(formData));
-    if (res.meta.requestStatus === "fulfilled") navigate("/");
+    try {
+      const request = await fetch("http://localhost:8000/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const response = await request.json()
+      console.log("Response ", response)
+      dispatch()
+    } catch (error) {
+      console.log("Error: ", e)
+    }
   };
 
   return (
@@ -35,12 +48,12 @@ export default function Login() {
         <form className="w-full md:w-1/2 flex flex-col gap-4" onSubmit={handleSubmit}>
           <h2 className="text-2xl font-bold text-center mb-4 text-primary">Вход</h2>
           <div className="flex items-center border p-2 rounded">
-            <FaEnvelope className="mr-2 text-gray-500" />
-            <input name="email" value={formData.email} onChange={handleChange} required placeholder="Email" className="w-full outline-none" />
+            <FaEnvelope className="mr-2 text-gray-600" />
+            <input name="email" value={formData.email} onChange={handleChange} required placeholder="Email" className="w-full outline-none text-black" />
           </div>
           <div className="flex items-center border p-2 rounded">
-            <FaLock className="mr-2 text-gray-500" />
-            <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Password" className="w-full outline-none" />
+            <FaLock className="mr-2 text-gray-600" />
+            <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Password" className="w-full outline-none text-black" />
           </div>
           <button type="submit" className="btn btn-soft btn-primary">Войти</button>
         </form>
