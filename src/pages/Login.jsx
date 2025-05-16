@@ -1,13 +1,14 @@
 
-import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+// src/pages/Login.jsx
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login, loginUser } from "../redux/slices/authSlice";
 import { FaLock, FaEnvelope } from "react-icons/fa";
 const illustration = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwoOybZyR8PaEZi9DSPbDYOd4HYLctFEvd2w&s";
 
 export default function Login() {
-
+  const isAuth = useSelector(state => state.auth.isAuth)
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -19,36 +20,28 @@ export default function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const request = await fetch("http://localhost:8000/api/v1/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(formData)
-    });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const response = await request.json();
-    console.log("Response: ", response);
+    try {
+      const request = await fetch("http://localhost:8000/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      })
 
-    if (request.ok) {
-      dispatch(login(response));
-      navigate("/"); 
-    } else {
-      alert(response.message || "Ошибка авторизации");
+      const response = await request.json()
+      console.log("Response: ", response)
+      dispatch(login(response))
+      navigate("/")
+    } catch (e) {
+      console.log("Error: ", e)
+    } finally {
+      console.log("STATE: ", isAuth)
     }
-  } catch (error) {
-    console.log(error);
-    alert("Ошибка при подключении к серверу");
-  }
-};
-
-  useEffect(() => {
-    handleSubmit
-  }, [])
-  
+  };
 
   return (
     <div className="min-h-screen text-base-300 flex items-center justify-center bg-gray-50 p-4">
