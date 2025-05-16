@@ -11,7 +11,9 @@ const PrivateRouter = ({ children }) => {
 
 
     useEffect(() => {
-        navigate("/login")
+        if (!isAuth) {
+            navigate("/login")
+        }
     }, [isAuth])
 
     return children
