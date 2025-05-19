@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Outlet } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { Outlet, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import io from "socket.io-client"
 import './App.css'
-
+import setSelect from "./redux/slices/selectedUserSlice.js"
 // const socket = io('http://localhost:8000') // Убедись, что порт совпадает
 const socket = io('https://one012-counter-ws-server.onrender.com') // Убедись, что порт совпадает
 
@@ -11,7 +11,10 @@ function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState([])
-  const user = useSelector(state => state.auth.user.user)
+  const user = useSelector(state => state.auth.user?.user)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
 
   useEffect(() => {
     console.log("USER:", user)
@@ -42,6 +45,12 @@ function App() {
     }
   }
 
+  const selectUser = (user) => {
+    console.log("TANLANGAN USER: ", user)
+    dispatch(setSelect(user))
+    navigate(`/chat/${user._id}`)
+  }
+
   useEffect(() => {
     getAllUsers()
   })
@@ -57,7 +66,7 @@ function App() {
           <div className='h-full w-full overflow-y-auto p-2 flex flex-col gap-5'>
             {onlineUsers.length > 0 ? (
               onlineUsers.map((item, index) => (
-                <div key={index} className='flex items-center gap-5 p-2 bg-base-100 rounded-xl shadow'>
+                <div key={index} className='flex items-center gap-5 p-2 bg-base-100 rounded-xl cursor-pointer shadow' onClick={() => selectUser(item)}>
                   <img
                     src={item.profileImage || "https://via.placeholder.com/64"}
                     className='size-16 rounded-full object-cover'
@@ -77,7 +86,7 @@ function App() {
       </div>
 
       {/* Правая часть — контент по маршрутам */}
-      <div className='w-9/12 h-screen overflow-y-auto p-4'>
+      <div className='w-9/12 h-screen overflow-y-auto'>
         <Outlet />
       </div>
     </div>

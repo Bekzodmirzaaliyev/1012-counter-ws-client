@@ -12,7 +12,7 @@ import {
   REGISTER
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-
+import selectedUserReducer from './slices/selectedUserSlice';
 const persistConfig = {
   key: 'root',
   storage,
@@ -22,6 +22,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  selectedUser: selectedUserReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
