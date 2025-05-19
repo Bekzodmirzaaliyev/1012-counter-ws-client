@@ -11,7 +11,7 @@ function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState([])
-  const user = useSelector(state => state.auth.user.newUser)
+  const user = useSelector(state => state.auth.user.user)
 
   useEffect(() => {
     console.log("USER:", user)
@@ -32,7 +32,7 @@ function App() {
 
   const getAllUsers = async () => {
     try {
-      const request = await fetch('http://localhost:8000/api/v1/auth/getAllUsers')
+      const request = await fetch('https://one012-counter-ws-server.onrender.com/api/v1/auth/getAllUsers')
       const response = await request.json()
       setUsers(response)
     } catch (e) {
