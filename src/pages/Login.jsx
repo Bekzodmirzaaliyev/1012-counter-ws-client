@@ -32,10 +32,14 @@ export default function Login() {
         body: JSON.stringify(formData)
       })
 
-      const response = await request.json()
-      console.log("Response: ", response)
-      dispatch(login(response))
-      navigate("/")
+      if (!request.ok) {
+        const errData = await request.json();
+        throw new Error(errData.message || "Login failed");
+      }
+
+      const response = await request.json();
+      dispatch(login(response));
+      navigate("/");
     } catch (e) {
       console.log("Error: ", e)
     } finally {

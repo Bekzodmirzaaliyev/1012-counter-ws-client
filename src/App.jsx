@@ -11,9 +11,10 @@ function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState([])
-  const user = useSelector(state => state.auth.user?.user)
+  const user = useSelector(state => state.auth.user.newUser)
 
   useEffect(() => {
+    console.log("USER:", user)
     if (!user) return
 
     socket.emit("connected", user)
