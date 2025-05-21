@@ -23,8 +23,9 @@ const Chat = () => {
   }
 
   useEffect(() => {
+    setLoading(true)
     getUser()
-  }, [])
+  }, [user])
 
   return (
     <div className='flex flex-col h-screen'>
@@ -38,7 +39,7 @@ const Chat = () => {
           <BsThreeDotsVertical />
         </div>
       </div>
-      <div className='flex-1 bg-red-400 h-[55%] overflow-y-auto'></div>
+      <div className='flex-1 h-[55%] overflow-y-auto'></div>
       <div className='w-full py-5 px-5 bg-base-300 flex'>
         <input type="text" className='input input-bordered w-full' />
         <button className='btn btn-soft btn-primary'>

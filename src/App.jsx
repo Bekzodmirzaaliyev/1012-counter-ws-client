@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import io from "socket.io-client"
 import './App.css'
 import setSelect from "./redux/slices/selectedUserSlice.js"
-// const socket = io('http://localhost:8000') // Убедись, что порт совпадает
-const socket = io('https://one012-counter-ws-server.onrender.com') // Убедись, что порт совпадает
+const socket = io('http://localhost:8000') // Убедись, что порт совпадает
+// const socket = io('https://one012-counter-ws-server.onrender.com') // Убедись, что порт совпадает
 
 function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
@@ -47,13 +47,13 @@ function App() {
 
   const selectUser = (user) => {
     console.log("TANLANGAN USER: ", user)
-    dispatch(setSelect(user))
+    // dispatch(setSelect(user))
     navigate(`/chat/${user._id}`)
   }
 
   useEffect(() => {
     getAllUsers()
-  })
+  },[])
   return (
     <div className='flex'>
       {/* Левая панель */}
@@ -74,7 +74,7 @@ function App() {
                   />
                   <div className='flex flex-col gap-1'>
                     <span className='font-bold text-lg'>{item.username}</span>
-                    <span className='text-success text-xs font-bold'>🟢 {item.status || "Online"}</span>
+                    <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
                   </div>
                 </div>
               ))
