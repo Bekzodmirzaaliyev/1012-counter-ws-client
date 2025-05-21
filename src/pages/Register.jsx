@@ -24,7 +24,7 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const request = await fetch("http://localhost:8000/api/v1/auth/register", {
+      const request = await fetch("https://one012-counter-ws-server.onrender.com/api/v1/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

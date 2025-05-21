@@ -32,7 +32,7 @@ function App() {
 
   const getAllUsers = async () => {
     try {
-      const request = await fetch('http://localhost:8000/api/v1/auth/getAllUsers')
+      const request = await fetch('https://one012-counter-ws-server.onrender.com/api/v1/auth/getAllUsers')
       const response = await request.json()
       setUsers(response)
     } catch (e) {

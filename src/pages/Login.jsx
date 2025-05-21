@@ -23,7 +23,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const request = await fetch("http://localhost:8000/api/v1/auth/login", {
+      const request = await fetch("https://one012-counter-ws-server.onrender.com/api/v1/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
