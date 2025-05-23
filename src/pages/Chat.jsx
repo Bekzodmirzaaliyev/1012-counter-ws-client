@@ -8,8 +8,9 @@ const Chat = () => {
   const { user } = useParams()
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState(null)
-  const [inputValue,setInputValue] = useState("")
+  const [inputValue, setInputValue] = useState("Bekzod")
 
+  
   const getUser = async () => {
     try {
       const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/auth/getUser/${user}`)
