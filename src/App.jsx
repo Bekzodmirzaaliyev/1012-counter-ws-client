@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import io from "socket.io-client"
 import './App.css'
-import setSelect from "./redux/slices/selectedUserSlice.js"
-const socket = io('http://localhost:8000') // Убедись, что порт совпадает
-// const socket = io('https://one012-counter-ws-server.onrender.com') // Убедись, что порт совпадает
+import socket from './Socket.jsx'
+// const socket = io('http://localhost:8000') // Убедись, что порт совпадает
+
 
 function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
@@ -53,7 +52,7 @@ function App() {
 
   useEffect(() => {
     getAllUsers()
-  },[])
+  }, [])
   return (
     <div className='flex'>
       {/* Левая панель */}
