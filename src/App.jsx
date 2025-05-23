@@ -11,7 +11,7 @@ function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState([])
-  const user = useSelector(state => state.auth.user?.user)
+  const user = useSelector(state => state.auth?.user?.user)
   const dispatch = useDispatch()
   const navigate = useNavigate()
 

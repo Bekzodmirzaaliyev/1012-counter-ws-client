@@ -8,7 +8,9 @@ const Chat = () => {
   const { user } = useParams()
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState(null)
+  const [inputValue, setInputValue] = useState("Bekzod")
 
+  
   const getUser = async () => {
     try {
       const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/auth/getUser/${user}`)
@@ -41,7 +43,7 @@ const Chat = () => {
       </div>
       <div className='flex-1 h-[55%] overflow-y-auto'></div>
       <div className='w-full py-5 px-5 bg-base-300 flex'>
-        <input type="text" className='input input-bordered w-full' />
+        <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} className='input input-bordered w-full' />
         <button className='btn btn-soft btn-primary'>
           <PiTelegramLogo />
         </button>

@@ -1,14 +1,13 @@
-
-// src/pages/Login.jsx
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { login, loginUser } from "../redux/slices/authSlice";
+import { useNavigate, Link } from "react-router-dom";
+import { login } from "../redux/slices/authSlice";
 import { FaLock, FaEnvelope } from "react-icons/fa";
+
 const illustration = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwoOybZyR8PaEZi9DSPbDYOd4HYLctFEvd2w&s";
 
 export default function Login() {
-  const isAuth = useSelector(state => state.auth.isAuth)
+  const isAuth = useSelector(state => state.auth.isAuth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -22,7 +21,6 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const request = await fetch("https://one012-counter-ws-server.onrender.com/api/v1/auth/login", {
         method: "POST",
@@ -30,7 +28,7 @@ export default function Login() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify(formData)
-      })
+      });
 
       if (!request.ok) {
         const errData = await request.json();
@@ -41,29 +39,52 @@ export default function Login() {
       dispatch(login(response));
       navigate("/");
     } catch (e) {
-      console.log("Error: ", e)
-    } finally {
-      console.log("STATE: ", isAuth)
+      console.log("Error: ", e);
     }
   };
 
   return (
-    <div className="min-h-screen text-base-300 flex items-center justify-center bg-gray-50 p-4">
-      <div className="bg-base-content rounded-2xl shadow-xl flex p-6 w-full max-w-4xl">
-        <div className="w-1/2 hidden md:flex items-center justify-center">
-          <img src={illustration} alt="login" className="w-3/4" />
+    <div className="min-h-screen bg-gradient-to-r from-sky-100 to-blue-200 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl flex w-full max-w-5xl overflow-hidden">
+        <div className="w-1/2 hidden md:flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
+          <img src={illustration} alt="login" className="w-4/5" />
         </div>
-        <form className="w-full md:w-1/2 flex flex-col gap-4" onSubmit={handleSubmit}>
-          <h2 className="text-2xl font-bold text-center mb-4 text-primary">Вход</h2>
-          <div className="flex items-center border p-2 rounded">
-            <FaEnvelope className="mr-2 text-gray-500" />
-            <input name="email" value={formData.email} onChange={handleChange} required placeholder="Email" className="w-full outline-none" />
+        <form className="w-full md:w-1/2 p-10 flex flex-col gap-6" onSubmit={handleSubmit}>
+          <h2 className="text-3xl font-bold text-center text-gray-800">Вход в систему</h2>
+
+          <div className="flex items-center border border-gray-300 p-3 rounded-xl shadow-sm bg-gray-50">
+            <FaEnvelope className="mr-3 text-gray-500" />
+            <input
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="Email"
+              className="w-full outline-none bg-transparent"
+            />
           </div>
-          <div className="flex items-center border p-2 rounded">
-            <FaLock className="mr-2 text-gray-500" />
-            <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="Password" className="w-full outline-none" />
+
+          <div className="flex items-center border border-gray-300 p-3 rounded-xl shadow-sm bg-gray-50">
+            <FaLock className="mr-3 text-gray-500" />
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="Пароль"
+              className="w-full outline-none bg-transparent"
+            />
           </div>
-          <button type="submit" className="btn btn-soft btn-primary" >Войти</button>
+
+          <button type="submit" className="btn bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 font-semibold">
+            Войти
+          </button>
+
+          <p className="text-center text-sm text-gray-500">
+            Нет аккаунта? <Link to="/register" className="text-indigo-600 hover:underline">Зарегистрируйтесь</Link>
+          </p>
         </form>
       </div>
     </div>
