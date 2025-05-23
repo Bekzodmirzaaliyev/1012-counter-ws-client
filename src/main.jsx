@@ -12,7 +12,7 @@ import { persistor, store } from './redux/store.js'
 import { PersistGate } from 'redux-persist/integration/react';
 import { Provider } from 'react-redux';
 import PrivateRouter from './guard/PrivateRouter.jsx'
-
+import Chat from "./pages/Chat.jsx"
 
 const router = createBrowserRouter([
   {
@@ -20,6 +20,12 @@ const router = createBrowserRouter([
     element: <PrivateRouter>
       <App />
     </PrivateRouter>,
+    children: [
+      {
+        path: "/chat/:user",
+        element: <Chat />
+      }
+    ]
   },
   {
     path: "/register",

@@ -33,6 +33,8 @@ export default function Register() {
       })
 
       const response = await request.json()
+      if(response.message === "Такой email уже существует") throw new Error(response.message)
+
       console.log("Response: ", response)
       dispatch(register(response))
       navigate("/")

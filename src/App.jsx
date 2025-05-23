@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Outlet } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { Outlet, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import io from "socket.io-client"
 import './App.css'
-
-// const socket = io('http://localhost:8000') // Убедись, что порт совпадает
-const socket = io('https://one012-counter-ws-server.onrender.com') // Убедись, что порт совпадает
+import setSelect from "./redux/slices/selectedUserSlice.js"
+const socket = io('http://localhost:8000') // Убедись, что порт совпадает
+// const socket = io('https://one012-counter-ws-server.onrender.com') // Убедись, что порт совпадает
 
 function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState([])
-  const user = useSelector(state => state.auth?.user?.newUser)
+  const user = useSelector(state => state.auth.user?.newuser)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
 
   useEffect(() => {
     console.log("USER:", user)
@@ -42,9 +45,15 @@ function App() {
     }
   }
 
+  const selectUser = (user) => {
+    console.log("TANLANGAN USER: ", user)
+    // dispatch(setSelect(user))
+    navigate(`/chat/${user._id}`)
+  }
+
   useEffect(() => {
     getAllUsers()
-  })
+  },[])
   return (
     <div className='flex'>
       {/* Левая панель */}
@@ -57,7 +66,7 @@ function App() {
           <div className='h-full w-full overflow-y-auto p-2 flex flex-col gap-5'>
             {onlineUsers.length > 0 ? (
               onlineUsers.map((item, index) => (
-                <div key={index} className='flex items-center gap-5 p-2 bg-base-100 rounded-xl shadow'>
+                <div key={index} className='flex items-center gap-5 p-2 bg-base-100 rounded-xl cursor-pointer shadow' onClick={() => selectUser(item)}>
                   <img
                     src={item.profileImage || "https://via.placeholder.com/64"}
                     className='size-16 rounded-full object-cover'
@@ -65,7 +74,7 @@ function App() {
                   />
                   <div className='flex flex-col gap-1'>
                     <span className='font-bold text-lg'>{item.username}</span>
-                    <span className='text-success text-xs font-bold'>🟢 {item.status || "Online"}</span>
+                    <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
                   </div>
                 </div>
               ))
@@ -77,7 +86,7 @@ function App() {
       </div>
 
       {/* Правая часть — контент по маршрутам */}
-      <div className='w-9/12 h-screen overflow-y-auto p-4'>
+      <div className='w-9/12 h-screen overflow-y-auto'>
         <Outlet />
       </div>
     </div>
