@@ -61,7 +61,7 @@ export default function Login() {
               onChange={handleChange}
               required
               placeholder="Email"
-              className="w-full outline-none bg-transparent"
+              className="w-full outline-none bg-transparent text-base-100"
             />
           </div>
 
@@ -74,7 +74,7 @@ export default function Login() {
               onChange={handleChange}
               required
               placeholder="Пароль"
-              className="w-full outline-none bg-transparent"
+              className="w-full outline-none bg-transparent text-base-100"
             />
           </div>
 

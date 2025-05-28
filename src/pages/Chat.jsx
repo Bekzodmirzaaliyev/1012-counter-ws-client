@@ -3,15 +3,16 @@ import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { PiTelegramLogo } from "react-icons/pi";
-import socket from "../Socket.jsx"
+import socket from "../Socket.js"
 
 
 const Chat = () => {
   const { user } = useParams()
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState(null)
-  const [inputValue, setInputValue] = useState("Bekzod")
-
+  const [inputValue, setInputValue] = useState("Abdulahm")
+  const userinfo = useSelector(state => state?.auth?.user)
+  const isTyping = useSelector(state => state?.auth?.use)
 
   const getUser = async () => {
     try {
@@ -23,6 +24,7 @@ const Chat = () => {
       console.log("SERVER ERROR: ", e)
     } finally {
       setLoading(false)
+
     }
   }
 
@@ -31,14 +33,27 @@ const Chat = () => {
     getUser()
   }, [user])
 
-  const sendMessage = (e) => {
-    console.log("keyboard: ", e.key)
-    console.log("keyboard: ", e.key === "Enter")
+  useEffect(() => {
+    socket.on("receive_message", (data) => {
+      console.log("data:", data)
+    })
+  }, [])
 
+  const sendMessage = (e) => {
+    e.preventDefault()
+    socket.emit("send_message", { message: inputValue, from: user, to: selectedUser._id })
+    setInputValue("")
   }
 
   const handleKeyDown = (event) => {
-    e.preventDefault()
+    if (event.key === "Enter") {
+      sendMessage(event);
+    }
+  };
+
+  const typingHandler = (e) => {
+    setInputValue(e.target.value)
+    socket.emit("typing", { from: userinfo, to: selectedUser })
   }
 
   return (
@@ -46,17 +61,18 @@ const Chat = () => {
       <div className='w-full p-5 bg-base-300 flex items-center justify-between'>
         <div>
           <p className='font-bold text-lg'>{selectedUser?.username}</p>
-          <p className='text-sm'>{selectedUser?.grade}</p>
+          <p className='text-sm'>{isTyping ? "Typing..." : selectedUser?.grade}</p>
         </div>
 
         <div>
           <BsThreeDotsVertical />
         </div>
       </div>
+
       <div className='flex-1 h-[55%] overflow-y-auto'></div>
       <div className='w-full py-5 px-5 bg-base-300 flex'>
-        <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={(e) => sendMessage(e)} className='input input-bordered w-full' />
-        <button className='btn btn-soft btn-primary'>
+        <input type="text" value={inputValue} onChange={(e) => typingHandler(e)} onKeyDown={(e) => handleKeyDown(e)} className='input input-bordered w-full' />
+        <button className='btn btn-soft btn-primary' onClick={sendMessage}>
           <PiTelegramLogo />
         </button>
       </div>

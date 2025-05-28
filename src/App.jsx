@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import './App.css'
-import socket from './Socket.jsx'
+import socket from './Socket.js'
 // const socket = io('http://localhost:8000') // Убедись, что порт совпадает
 
 
