@@ -33,7 +33,7 @@ const Chat = () => {
 
   useEffect(() => {
     socket.on("receive_message", (data) => {
-      console.log("data:", data)
+      console.log("keldi:", data)
     })
   }, [])
 
