@@ -33,10 +33,17 @@ const Chat = () => {
   }, [user])
 
   useEffect(() => {
-    socket.on("receive_message", (data) => {
-      console.log("keldi:", data)
-    })
-  }, [])
+    const receiveMessage = (data) => {
+      console.log("Yangi xabar keldi:", data);
+      setChat((prev) => [...prev, data]); // chatga qo‘shamiz
+    };
+
+    socket.on("receive_message", receiveMessage);
+
+    return () => {
+      socket.off("receive_message", receiveMessage); // cleanup
+    };
+  }, []);
 
   const getChat = async () => {
     console.log("USER ID: ", user)
@@ -57,10 +64,16 @@ const Chat = () => {
   }, [user])
 
   const sendMessage = (e) => {
-    e.preventDefault()
-    socket.emit("send_message", { message: inputValue, from: user, to: selectedUser._id })
-    setInputValue("")
-  }
+    e.preventDefault();
+    const msg = {
+      message: inputValue,
+      from: userinfo._id, // fix
+      to: selectedUser._id,
+    };
+    socket.emit("send_message", msg);
+    setChat((prev) => [...prev, msg]); // darhol qo‘shish
+    setInputValue("");
+  };
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
