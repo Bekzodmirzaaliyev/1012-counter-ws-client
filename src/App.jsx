@@ -72,7 +72,7 @@ function App() {
                     alt="profile"
                   />
                   <div className='flex flex-col gap-1'>
-                    <span className='font-bold text-lg'>{item.username}</span>
+                    <span className='font-bold text-lg'>{item.username.length > 24 ? item.username.slice(0, 24) + "..." : item.username}</span>
                     <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
                   </div>
                 </div>
