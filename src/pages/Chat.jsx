@@ -11,7 +11,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState(null)
   const [inputValue, setInputValue] = useState("Abdulahm")
-  const userinfo = useSelector(state => state?.auth?.user)
+  const userinfo = useSelector(state => state?.auth?.user?.user)
   const [chat, setChat] = useState([])
 
   const getUser = async () => {
@@ -70,6 +70,7 @@ const Chat = () => {
       from: userinfo._id, // fix
       to: selectedUser._id,
     };
+    console.log("MESSAGE: ", msg)
     socket.emit("send_message", msg);
     setChat((prev) => [...prev, msg]); // darhol qo‘shish
     setInputValue("");
@@ -98,7 +99,15 @@ const Chat = () => {
           <BsThreeDotsVertical />
         </div>
       </div>
-      <div className='flex-1 h-[55%] overflow-y-auto'></div>
+      <div className='flex-1 h-[55%] overflow-y-auto'>
+        {
+          chat?.map((item, id) => (
+            <div key={id} className={`chat ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
+              <div className="chat-bubble">{item.message}</div>
+            </div>
+          ))
+        }
+      </div>
       <div className='w-full py-5 px-5 bg-base-300 flex'>
         <input type="text" value={inputValue} onChange={(e) => typingHandler(e)} onKeyDown={(e) => handleKeyDown(e)} className='input input-bordered w-full' />
         <button className='btn btn-soft btn-primary' onClick={sendMessage}>
