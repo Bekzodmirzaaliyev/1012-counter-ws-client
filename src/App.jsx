@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import './App.css'
-import socket from './Socket.js'
+import socket from './Socket.jsx'
 // const socket = io('http://localhost:8000') // Убедись, что порт совпадает
 
 
@@ -72,7 +72,7 @@ function App() {
                     alt="profile"
                   />
                   <div className='flex flex-col gap-1'>
-                    <span className='font-bold text-lg'>{item.username}</span>
+                    <span className='font-bold text-lg'>{item.username.length > 24 ? item.username.slice(0, 24) + "..." : item.username}</span>
                     <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
                   </div>
                 </div>

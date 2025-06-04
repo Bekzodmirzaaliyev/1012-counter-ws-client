@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { PiTelegramLogo } from "react-icons/pi";
-import socket from "../Socket.js"
+import socket from "../Socket.jsx"
 
 
 const Chat = () => {
@@ -35,7 +35,7 @@ const Chat = () => {
 
   useEffect(() => {
     socket.on("receive_message", (data) => {
-      console.log("data:", data)
+      console.log("keldi:", data)
     })
   }, [])
 
