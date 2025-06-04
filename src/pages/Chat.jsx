@@ -12,12 +12,13 @@ const Chat = () => {
   const [selectedUser, setSelectedUser] = useState(null)
   const [inputValue, setInputValue] = useState("Abdulahm")
   const userinfo = useSelector(state => state?.auth?.user)
+  const [chat, setChat] = useState([])
 
   const getUser = async () => {
     try {
       const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/auth/getUser/${user}`)
       const response = await request.json()
-      console.log("respnose:", response)
+      // console.log("respnose:", response)
       setSelectedUser(response)
     } catch (e) {
       console.log("SERVER ERROR: ", e)
@@ -36,6 +37,24 @@ const Chat = () => {
       console.log("keldi:", data)
     })
   }, [])
+
+  const getChat = async () => {
+    console.log("USER ID: ", user)
+    console.log("SELECTED ID: ", userinfo.user._id)
+    try {
+      const request = await fetch(`http://localhost:8000/api/v1/message/${userinfo.user._id}/${user}`)
+      const response = await request.json()
+      console.log("chat:", response)
+    } catch (e) {
+      console.log("SERVER ERROR: ", e)
+    } finally {
+
+    }
+  }
+
+  useEffect(() => {
+    getChat()
+  }, [user])
 
   const sendMessage = (e) => {
     e.preventDefault()
