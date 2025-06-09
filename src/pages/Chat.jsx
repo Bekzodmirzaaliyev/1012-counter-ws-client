@@ -50,8 +50,9 @@ const Chat = () => {
     console.log("USER ID: ", user)
     console.log("SELECTED ID: ", userinfo._id)
     try {
-      const request = await fetch(`http://localhost:8000/api/v1/message/${userinfo.id}/${user}`)
+      const request = await fetch(`http://localhost:8000/api/v1/message/${userinfo._id}/${user}`)
       const response = await request.json()
+      setChat(response)
       console.log("chat:", response)
     } catch (e) {
       console.log("SERVER ERROR: ", e)
@@ -104,7 +105,7 @@ const Chat = () => {
         {
           chat?.map((item, id) => (
             <div key={id} className={`chat ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
-              <div className="chat-bubble">{item.message}</div>
+              <div className="chat-bubble">{item.text}</div>
             </div>
           ))
         }
