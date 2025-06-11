@@ -24,7 +24,6 @@ const Chat = () => {
       console.log("SERVER ERROR: ", e)
     } finally {
       setLoading(false)
-
     }
   }
 
@@ -94,7 +93,7 @@ const Chat = () => {
       <div className='w-full p-5 bg-base-300 flex items-center justify-between'>
         <div>
           <p className='font-bold text-lg'>{selectedUser?.username}</p>
-          <p className='text-sm'>{isTyping ? "Typing..." : selectedUser?.grade}</p>
+          <p className='text-sm'>{selectedUser?.grade}</p>
         </div>
 
         <div>
