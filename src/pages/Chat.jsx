@@ -70,6 +70,7 @@ const Chat = () => {
       text: inputValue,
       from: userinfo._id, // fix
       to: selectedUser._id,
+      time: date.now()
     };
     console.log("MESSAGE: ", msg)
     socket.emit("send_message", msg);
@@ -105,6 +106,7 @@ const Chat = () => {
           chat?.map((item, id) => (
             <div key={id} className={`chat ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
               <div className="chat-bubble">{item.text}</div>
+              <p className='text-xs'>{item?.timeStamp}</p>
             </div>
           ))
         }
