@@ -49,7 +49,7 @@ const Chat = () => {
     console.log("USER ID: ", user)
     console.log("SELECTED ID: ", userinfo._id)
     try {
-      const request = await fetch(`http://localhost:8000/api/v1/message/${userinfo._id}/${user}`)
+      const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/message/${userinfo._id}/${user}`)
       const response = await request.json()
       setChat(response)
       console.log("chat:", response)
@@ -100,15 +100,26 @@ const Chat = () => {
           <BsThreeDotsVertical />
         </div>
       </div>
-      <div className='flex-1 h-[55%] overflow-y-auto'>
+
+      <div className='flex-1 h-[55%] px-4 overflow-y-auto'>
         {
           chat?.map((item, id) => (
-            <div key={id} className={`chat ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
-              <div className="chat-bubble">{item.text}</div>
+            <div key={id} className={`chat flex flex-col  w-full  ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
+              <div className='flex flex-row-reverse gap-4'>
+                <figure>
+                  <img src={selectedUser?.avatar || "https://static.wikia.nocookie.net/universalstudios/images/f/f2/Shrek2-disneyscreencaps.com-4369.jpg/revision/latest?cb=20250224023204"} className='size-10 bg-base-100 rounded-full' alt="" />
+                </figure>
+
+                <div className={`chat-bubble ${item.from === userinfo._id ? "chat-bubble-primary" : "chat-bubble-secondary"}`}>
+                  <p>{item?.text}</p>
+                  <p>{item?.timeStamp?.slice(11, 16)}</p>
+                </div>
+              </div>
             </div>
           ))
         }
       </div>
+
       <div className='w-full py-5 px-5 bg-base-300 flex'>
         <input type="text" value={inputValue} onChange={(e) => typingHandler(e)} onKeyDown={(e) => handleKeyDown(e)} className='input input-bordered w-full' />
         <button className='btn btn-soft btn-primary' onClick={sendMessage}>
