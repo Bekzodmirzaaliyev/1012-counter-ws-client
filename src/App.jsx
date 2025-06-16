@@ -10,6 +10,7 @@ import { FaUser } from "react-icons/fa";
 import { IoArchive, IoExit } from "react-icons/io5";
 import { RxExit } from "react-icons/rx";
 import { ImCross } from "react-icons/im";
+import { logout } from './redux/slices/authSlice.js'
 
 
 function App() {
@@ -19,6 +20,10 @@ function App() {
   const user = useSelector(state => state.auth?.user?.user)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const handleLogout = () => {
+    dispatch(logout())
+    
+  }
 
 
   useEffect(() => {
@@ -55,6 +60,7 @@ function App() {
     // dispatch(setSelect(user))
     navigate(`/chat/${user._id}`)
   }
+console.log("USERS: ", users);
 
   useEffect(() => {
     getAllUsers()
@@ -98,11 +104,25 @@ function App() {
                         <p>В сети</p>
                       </div>
                     </div>
+                    <div className='flex-1 py-5 mt-5   flex flex-col gap-2'>
+                      <div className='flex items-center justify-between' >
+                        <p>email:</p>
+                        <p>{user?.email}</p>
+                      </div>
+                       <div className='flex items-center justify-between' >
+                        <p>grade:</p>
+                        <p>{user?.grade}</p>
+                      </div>
+                      <div className='flex items-center justify-between' >
+                        <p>ID:</p>
+                        <p>{user?._id}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className='flex-1 min-h-[60%] bg-blue-400'></div>
+
                   <div className='flex-1 flex items-end'>
-                    <button className='btn btn-error btn-soft w-full'>
-                      <span>Выйти из аккаунта</span>
+                    <button onClick={handleLogout} className='btn btn-error btn-soft w-full'>
+                      <span >Выйти из аккаунта</span>
                       <span>
                         <RxExit />
                       </span>

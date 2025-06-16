@@ -104,15 +104,15 @@ const Chat = () => {
       <div className='flex-1 h-[55%] px-4 overflow-y-auto'>
         {
           chat?.map((item, id) => (
-            <div key={id} className={`chat flex flex-col  w-full  ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
-              <div className='flex flex-row-reverse gap-4'>
+            <div key={id} className={`chat flex flex-col  w-full ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
+              <div className={`flex items-end gap-4 max-w-[65%]  ${item.from === userinfo._id ? "flex-row-reverse" : "flex-row"}`}>
                 <figure>
                   <img src={selectedUser?.avatar || "https://static.wikia.nocookie.net/universalstudios/images/f/f2/Shrek2-disneyscreencaps.com-4369.jpg/revision/latest?cb=20250224023204"} className='size-10 bg-base-100 rounded-full' alt="" />
                 </figure>
 
-                <div className={`chat-bubble ${item.from === userinfo._id ? "chat-bubble-primary" : "chat-bubble-secondary"}`}>
-                  <p>{item?.text}</p>
-                  <p>{item?.timeStamp?.slice(11, 16)}</p>
+                <div className={`chat-bubble flex-1 ${item.from === userinfo._id ? "chat-bubble-primary" : "chat-bubble-secondary"}`}>
+                  <p className=' break-words w-full'>{item?.text}</p>
+                  <p className='text-white/70 text-end text-xs'>{item?.timeStamp?.slice(11, 16)}</p>
                 </div>
               </div>
             </div>
