@@ -49,7 +49,7 @@ const Chat = () => {
     console.log("USER ID: ", user)
     console.log("SELECTED ID: ", userinfo._id)
     try {
-      const request = await fetch(`http://localhost:8000/api/v1/message/${userinfo._id}/${user}`)
+      const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/message/${userinfo._id}/${user}`)
       const response = await request.json()
       setChat(response)
       console.log("chat:", response)
@@ -70,7 +70,6 @@ const Chat = () => {
       text: inputValue,
       from: userinfo._id, // fix
       to: selectedUser._id,
-      time: date.now()
     };
     console.log("MESSAGE: ", msg)
     socket.emit("send_message", msg);
@@ -104,9 +103,14 @@ const Chat = () => {
       <div className='flex-1 h-[55%] overflow-y-auto'>
         {
           chat?.map((item, id) => (
-            <div key={id} className={`chat ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
-              <div className="chat-bubble">{item.text}</div>
-              <p className='text-xs'>{item?.timeStamp}</p>
+            <div key={id} className={`chat flex-col ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
+              <div className="chat-bubble">
+                <figure>
+                  <img className='rounded-full' src="" alt="" />
+                </figure>
+                <p>{item.text}</p>
+                <p className='text-xs text-end'>{item?.timeStamp.slice(11, 16)}</p>
+              </div>
             </div>
           ))
         }

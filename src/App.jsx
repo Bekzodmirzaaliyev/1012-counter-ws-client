@@ -56,32 +56,39 @@ function App() {
   return (
     <div className='flex'>
       {/* Левая панель */}
-      <div className='w-3/12 h-screen bg-base-300 border-r'>
-        {loading ? (
-          <div className='h-full w-full flex justify-center items-center'>
-            <span className="loading loading-bars loading-xl"></span>
-          </div>
-        ) : (
-          <div className='h-full w-full overflow-y-auto p-2 flex flex-col gap-5'>
-            {onlineUsers.length > 0 ? (
-              onlineUsers.map((item, index) => (
-                <div key={index} className='flex items-center gap-5 p-2 bg-base-100 rounded-xl cursor-pointer shadow' onClick={() => selectUser(item)}>
-                  <img
-                    src={item.profileImage || "https://via.placeholder.com/64"}
-                    className='size-16 rounded-full object-cover'
-                    alt="profile"
-                  />
-                  <div className='flex flex-col gap-1'>
-                    <span className='font-bold text-lg'>{item.username.length > 24 ? item.username.slice(0, 24) + "..." : item.username}</span>
-                    <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
+      <div className='w-3/12 h-screen bg-base-300 border-r flex flex-col'>
+       
+        <div>
+
+        </div>
+
+        <div>
+          {loading ? (
+            <div className='h-full w-full flex justify-center items-center'>
+              <span className="loading loading-bars loading-xl"></span>
+            </div>
+          ) : (
+            <div className='h-full w-full overflow-y-auto p-2 flex flex-col gap-5'>
+              {onlineUsers.length > 0 ? (
+                onlineUsers.map((item, index) => (
+                  <div key={index} className='flex items-center gap-5 p-2 bg-base-100 rounded-xl cursor-pointer shadow' onClick={() => selectUser(item)}>
+                    <img
+                      src={item.profileImage || "https://via.placeholder.com/64"}
+                      className='size-16 rounded-full object-cover'
+                      alt="profile"
+                    />
+                    <div className='flex flex-col gap-1'>
+                      <span className='font-bold text-lg'>{item.username.length > 24 ? item.username.slice(0, 24) + "..." : item.username}</span>
+                      <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className='text-center text-sm text-gray-400'>No online users</div>
-            )}
-          </div>
-        )}
+                ))
+              ) : (
+                <div className='text-center text-sm text-gray-400'>No online users</div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Правая часть — контент по маршрутам */}
