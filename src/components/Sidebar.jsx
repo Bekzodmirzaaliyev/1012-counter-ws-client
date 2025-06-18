@@ -20,8 +20,8 @@ const Sidebar = ({ onlineUsers, loading, selectUser }) => {
 
   return (
     <div className='w-3/12 h-screen bg-base-300 border-r flex flex-col'>
-      <div className='flex-1 flex flex-col gap-2'>
-        <div className='flex flex-1 w-full py-1 h-full px-3 gap-1'>
+      <div className='flex flex-col gap-2'>
+        <div className='flex  w-full py-1 px-3 gap-1'>
           <div className="drawer w-1/5">
             <input id="my-drawer" type="checkbox" className="drawer-toggle" />
             <div className="drawer-content">

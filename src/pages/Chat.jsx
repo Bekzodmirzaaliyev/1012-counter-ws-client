@@ -99,7 +99,7 @@ const Chat = () => {
           <div key={id} className={`chat flex flex-col w-full ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
             <div className={`flex items-end gap-4 max-w-[65%] ${item.from === userinfo._id ? "flex-row-reverse" : "flex-row"}`}>
               <figure>
-                <img src={selectedUser?.avatar || "https://via.placeholder.com/64"} className='size-10 bg-base-100 rounded-full' alt="" />
+                <img src={selectedUser?.profileImage || "https://via.placeholder.com/64"} className='size-10 bg-base-300 rounded-full' alt="" />
               </figure>
               <div className={`chat-bubble flex-1 ${item.from === userinfo._id ? "chat-bubble-primary" : "chat-bubble-secondary"}`}>
                 <p className='break-words w-full'>{item?.text}</p>
