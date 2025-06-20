@@ -48,8 +48,8 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
 
           <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-col rounded-xl p-4 shadow-xl border-primary">
               <button className="btn btn-soft btn-primary btn-sm" onClick={() => makeAdmin({userID: user._id, selectedUser: selectedUser._id, role: "admin"})}>Назначить Админстратором</button>
-              <button className="btn btn-soft btn-primary btn-sm">Назначить Модератор</button>
-              <button className="btn btn-soft btn-primary btn-sm">Понизить до Пользователя</button>
+              <button className="btn btn-soft btn-primary btn-sm" onClick={() => makeAdmin({userID: user._id, selectedUser: selectedUser._id, role: "moderator"})}>Назначить Модератор</button>
+              <button className="btn btn-soft btn-primary btn-sm" onClick={() => makeAdmin({userID: user._id, selectedUser: selectedUser._id, role: "user"})}>Понизить до Пользователя</button>
           </div>
 
            <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-col rounded-xl p-4 shadow-xl border-error">

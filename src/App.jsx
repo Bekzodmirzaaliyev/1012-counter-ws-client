@@ -19,6 +19,7 @@ function App() {
     socket.emit("connected", user)
 
     socket.on("users", (users) => {
+      console.log("users:", users)
       setOnlineUsers(users)
       setLoading(false)
     })

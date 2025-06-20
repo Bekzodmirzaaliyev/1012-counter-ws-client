@@ -18,6 +18,8 @@ const Sidebar = ({ onlineUsers, loading, selectUser }) => {
     dispatch(logout())
   }
 
+
+
   return (
     <div className='w-3/12 h-screen bg-base-300 border-r flex flex-col'>
       <div className='flex flex-col gap-2'>
@@ -99,6 +101,9 @@ const Sidebar = ({ onlineUsers, loading, selectUser }) => {
                   <div className='flex flex-col gap-1'>
                     <span className='font-bold text-lg'>{item.username.length > 24 ? item.username.slice(0, 24) + "..." : item.username}</span>
                     <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
+                  </div>
+                  <div>
+                    <p>{item?.role}</p>
                   </div>
                 </div>
               ))
