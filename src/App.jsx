@@ -18,13 +18,7 @@ function App() {
     if (!user) return
     socket.emit("connected", user)
 
-    socket.on("users", (users) => {
-      console.log("users:", users)
-      setOnlineUsers(users)
-      setLoading(false)
-    })
-
-    return () => socket.off("users")
+   
   }, [user])
 
   const getAllUsers = async () => {
@@ -53,6 +47,7 @@ function App() {
         onlineUsers={onlineUsers}
         loading={loading}
         selectUser={selectUser}
+        setOnlineUsers={setOnlineUsers}
       />
       <div className='w-9/12 h-screen overflow-y-auto'>
         {/* 🧠 Drawer control proplarini Outlet'ga yuborish */}

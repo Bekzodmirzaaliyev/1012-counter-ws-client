@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../redux/slices/authSlice'
@@ -8,17 +8,29 @@ import { FaUser } from 'react-icons/fa'
 import { IoArchive } from 'react-icons/io5'
 import { RxExit } from 'react-icons/rx'
 import { ImCross } from 'react-icons/im'
+import socket from '../Socket'
 
-const Sidebar = ({ onlineUsers, loading, selectUser }) => {
+const Sidebar = ({ loading, selectUser }) => {
   const user = useSelector(state => state.auth?.user?.user)
+  const [onlineUsers, setOnlineUsers] = useState()
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
   const handleLogout = () => {
+
     dispatch(logout())
   }
 
+  useEffect(() => {
+    socket.on("users", (updatedUsers) => {
+      console.log("updatedUsers", updatedUsers)
+      setOnlineUsers(updatedUsers);
+    });
 
+    return () => {
+      socket.off("users");
+    };
+  }, [])
 
   return (
     <div className='w-3/12 h-screen bg-base-300 border-r flex flex-col'>
@@ -96,14 +108,19 @@ const Sidebar = ({ onlineUsers, loading, selectUser }) => {
           <div className='h-full w-full overflow-y-auto p-2 flex flex-col gap-5'>
             {onlineUsers.length > 0 ? (
               onlineUsers.map((item, index) => (
-                <div key={index} className='flex items-center gap-5 p-2 bg-base-100 rounded-xl cursor-pointer shadow' onClick={() => selectUser(item)}>
-                  <img src={item.profileImage || "https://via.placeholder.com/64"} className='size-16 rounded-full object-cover' alt="profile" />
-                  <div className='flex flex-col gap-1'>
-                    <span className='font-bold text-lg'>{item.username.length > 24 ? item.username.slice(0, 24) + "..." : item.username}</span>
-                    <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
+                <div key={index} className={`${item?.role === "owner" ? "shadow-md shadow-error" : item.role === "admin" ? "shadow-md shadow-info" : item?.role === "moderator" ? "shadow-success shadow-md" : item.role === "vip" ? "shadow-md shadow-warning": ""} flex items-center justify-between gap-5 p-2 bg-base-100 rounded-xl cursor-pointer shadow`} onClick={() => selectUser(item)}>
+                  <div className='flex items-center gap-5'>
+                    <img src={item.profileImage || "https://via.placeholder.com/64"} className='size-16 rounded-full object-cover' alt="profile" />
+                    <div className='flex flex-col gap-1'>
+                      <span className='font-bold text-lg'>{item.username.length > 24 ? item.username.slice(0, 24) + "..." : item.username}</span>
+                      <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
+                    </div>
                   </div>
-                  <div>
-                    <p>{item?.role}</p>
+                  <div className='text-sm capitalize '>
+                    {item?.role === "owner" && <p className='text-shadow-md text-error text-shadow-error/80'>{item?.role}</p>}
+                    {item?.role === "admin" && <p className='text-shadow-md text-info text-shadow-info/80'>{item?.role}</p>}
+                    {item?.role === "moderator" && <p className='text-shadow-md text-success text-shadow-success/80'>{item?.role}</p>}
+                    {item?.role === "vip" && <p className='text-shadow-md text-warning text-shadow-warning/80'>{item?.role}</p>}
                   </div>
                 </div>
               ))

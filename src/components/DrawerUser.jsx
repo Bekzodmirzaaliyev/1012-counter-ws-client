@@ -2,24 +2,33 @@ import React from "react";
 import { ImCross } from "react-icons/im";
 import socket from "../Socket";
 import { useSelector } from "react-redux";
+import { toast } from 'react-toastify';
 
 const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
   const user = useSelector(state => state?.auth?.user?.user)
-  console.log("USER: " , user)
+  console.log("USER: ", user)
 
-  const makeAdmin = async({ userID, selectedUser, role }) => {
-    console.log("DEBUG MAKEADMIN: ", {userID, selectedUser, role})
-    socket.emit("setAdmin", {userID, selectedUser, role})
+  const makeAdmin = async ({ userID, selectedUser, role }) => {
+    console.log("DEBUG MAKEADMIN: ", { userID, selectedUser, role })
+    socket.emit("setAdmin", { userID, selectedUser, role })
+  }
+
+  const handleBan = async ({ userID, selectedUser, reason }) => {
+    try {
+      socket.emit("ban", { userID, selectedUser, reason })
+    } catch (e) {
+      toast.error("F Socket: ", e)
+    }
   }
 
   return (
     <div className={`drawer drawer-end ${isOpen ? "drawer-open" : ""}`}>
       <input id="user-drawer" type="checkbox" className="drawer-toggle" checked={isOpen} onChange={onClose} />
-      
+
       <div className="drawer-side z-50">
         {/* Qora fonli overlay - bg yo‘q qilish shart emas */}
         <label htmlFor="user-drawer" className="drawer-overlay" onClick={onClose}></label>
-        
+
         {/* Faqat shu qismga bg beramiz */}
         <div className="menu p-4 w-96 min-h-full bg-base-200 text-base-content flex flex-col">
           <div className="flex items-center justify-between mb-4">
@@ -42,23 +51,24 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
           <div className="mt-5 space-y-2">
             <p><span className="font-semibold">Email:</span> {selectedUser?.email || "-"}</p>
             <p><span className="font-semibold">ID:</span> {selectedUser?._id || "-"}</p>
+            <p><span className="font-semibold">Role: </span> {selectedUser?.role || "-"}</p>
           </div>
 
           <div className="text-center py-2">Админ Панель</div>
-
-          <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-col rounded-xl p-4 shadow-xl border-primary">
-              <button className="btn btn-soft btn-primary btn-sm" onClick={() => makeAdmin({userID: user._id, selectedUser: selectedUser._id, role: "admin"})}>Назначить Админстратором</button>
-              <button className="btn btn-soft btn-primary btn-sm" onClick={() => makeAdmin({userID: user._id, selectedUser: selectedUser._id, role: "moderator"})}>Назначить Модератор</button>
-              <button className="btn btn-soft btn-primary btn-sm" onClick={() => makeAdmin({userID: user._id, selectedUser: selectedUser._id, role: "user"})}>Понизить до Пользователя</button>
+          <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-1 rounded-xl p-4 shadow-xl border-primary">
+            <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "admin" })}>Назначить Админстратором</button>
+            <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "moderator" })}>Назначить Модератор</button>
+            <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "vip" })}>Назначить VIP</button>
+            <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "user" })}>Понизить до Пользователя</button>
           </div>
 
-           <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-col rounded-xl p-4 shadow-xl border-error">
-              <button className="btn btn-soft btn-error btn-sm">Заблокировать</button>
-              <button className="btn btn-soft btn-error btn-sm">Предупреждение</button>
-              <button className="btn btn-soft btn-error btn-sm">Заглушить</button>
-              <button className="btn btn-soft btn-error btn-sm">Выгнать из сайта</button>
+          <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-2 rounded-xl p-4 shadow-xl border-error">
+            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleBan({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Заблокировать</button>
+            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Предупреждение</button>
+            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Заглушить</button>
+            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Выгнать из сайта</button>
           </div>
-          
+
         </div>
       </div>
     </div>
