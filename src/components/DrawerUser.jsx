@@ -21,6 +21,9 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
     }
   }
 
+  
+  
+
   return (
     <div className={`drawer drawer-end ${isOpen ? "drawer-open" : ""}`}>
       <input id="user-drawer" type="checkbox" className="drawer-toggle" checked={isOpen} onChange={onClose} />

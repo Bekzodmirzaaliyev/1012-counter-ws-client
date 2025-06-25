@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import socket from './Socket.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import DrawerUser from './components/DrawerUser.jsx'
+import { toast } from 'react-toastify';
 
 function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
@@ -40,6 +41,15 @@ function App() {
   const selectUser = (user) => {
     navigate(`/chat/${user._id}`)
   }
+
+  useEffect(() => {
+    socket.on("admin_notification")
+    socket.on("BanResult")
+    return() => {
+      socket.off("admin_notification")
+      socket.off("BanResult")
+    }
+  })
 
   return (
     <div className='flex'>
