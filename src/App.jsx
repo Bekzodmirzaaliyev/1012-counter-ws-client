@@ -47,7 +47,12 @@ function App() {
   useEffect(() => {
     socket.on("admin_notification")
     socket.on("BanResult")
+    socket.on("admin_notification", (data) => {
+      console.log(data)
+      toast.error(data.message)
+    })
     socket.on("Ban_Result_reciever", (data) => {
+      console.log("ban-result",data)
       toast.error(data.message)
       dispatch(logout())
     })
