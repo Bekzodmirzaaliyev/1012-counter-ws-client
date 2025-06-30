@@ -106,7 +106,7 @@ const Sidebar = ({ loading, selectUser }) => {
           </div>
         ) : (
           <div className='h-full w-full overflow-y-auto p-2 flex flex-col gap-5'>
-            {onlineUsers.length > 0 ? (
+            {onlineUsers?.length > 0 ? (
               onlineUsers.map((item, index) => (
                 <div key={index} className={`${item?.role === "owner" ? "shadow-md shadow-error" : item.role === "admin" ? "shadow-md shadow-info" : item?.role === "moderator" ? "shadow-success shadow-md" : item.role === "vip" ? "shadow-md shadow-warning": ""} flex items-center justify-between gap-5 p-2 bg-base-100 rounded-xl cursor-pointer shadow`} onClick={() => selectUser(item)}>
                   <div className='flex items-center gap-5'>
