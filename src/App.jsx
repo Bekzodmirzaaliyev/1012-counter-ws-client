@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import socket from './Socket.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import DrawerUser from './components/DrawerUser.jsx'
 import { toast } from 'react-toastify';
+import { logout } from './redux/slices/authSlice.js'
 
 function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
@@ -14,12 +15,13 @@ function App() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false) // ✅ Drawer ochiqmi yo‘qmi
   const user = useSelector(state => state.auth?.user?.user)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (!user) return
     socket.emit("connected", user)
 
-   
+
   }, [user])
 
   const getAllUsers = async () => {
@@ -45,7 +47,16 @@ function App() {
   useEffect(() => {
     socket.on("admin_notification")
     socket.on("BanResult")
-    return() => {
+    socket.on("admin_notification", (data) => {
+      console.log(data)
+      toast.error(data.message)
+    })
+    socket.on("Ban_Result_reciever", (data) => {
+      console.log("ban-result",data)
+      toast.error(data.message)
+      dispatch(logout())
+    })
+    return () => {
       socket.off("admin_notification")
       socket.off("BanResult")
     }

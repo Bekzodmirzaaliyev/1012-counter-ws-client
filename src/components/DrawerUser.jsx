@@ -21,8 +21,15 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
     }
   }
 
-  
-  
+  const handleUnBan = async ({ userID, selectedUser }) => {
+    try {
+      socket.emit("unban", { userID, selectedUser })
+    } catch (e) {
+      toast.error("F Socket: ", e)
+    }
+  }
+
+
 
   return (
     <div className={`drawer drawer-end ${isOpen ? "drawer-open" : ""}`}>
@@ -70,6 +77,10 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
             <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Предупреждение</button>
             <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Заглушить</button>
             <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Выгнать из сайта</button>
+          </div>
+
+          <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-2 rounded-xl p-4 shadow-xl border-success">
+            <button className="btn btn-soft btn-success btn-xs flex-1 text-nowrap" onClick={() => handleUnBan({ userID: user._id, selectedUser: selectedUser._id})}>Разблокировать</button>
           </div>
 
         </div>
