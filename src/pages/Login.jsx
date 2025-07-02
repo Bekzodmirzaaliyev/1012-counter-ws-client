@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../redux/slices/authSlice";
 import { FaLock, FaEnvelope } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const illustration = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwoOybZyR8PaEZi9DSPbDYOd4HYLctFEvd2w&s";
 
@@ -30,16 +31,26 @@ export default function Login() {
         body: JSON.stringify(formData)
       });
 
+      const response = await request.json();
+
       if (!request.ok) {
-        const errData = await request.json();
-        throw new Error(errData.message || "Login failed");
+        if (request.status === 403) {
+          toast.error("⛔ Siz ban qilingansiz!");
+        } else if (request.status === 404) {
+          toast.error("😕 Foydalanuvchi topilmadi");
+        } else {
+          toast.error(response.message || "❌ Loginda xatolik yuz berdi");
+        }
+        return;
       }
 
-      const response = await request.json();
+      // Muvaffaqiyatli login
       dispatch(login(response));
       navigate("/");
+      toast.success("✅ Xush kelibsiz!");
     } catch (e) {
       console.log("Error: ", e);
+      toast.error("❌ Server bilan ulanishda xatolik");
     }
   };
 
