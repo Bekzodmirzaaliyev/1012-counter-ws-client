@@ -30,6 +30,14 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
   }
 
 
+  const handleMute = async ({ userID, selectedUser, reason }) => {
+    try {
+      socket.emit("mute", { userID, selectedUser, reason })
+    } catch (e) {
+      toast.error("F Socket: ", e)
+    }
+  }
+
 
   return (
     <div className={`drawer drawer-end ${isOpen ? "drawer-open" : ""}`}>
@@ -75,7 +83,7 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
           <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-2 rounded-xl p-4 shadow-xl border-error">
             <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleBan({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Заблокировать</button>
             <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Предупреждение</button>
-            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Заглушить</button>
+            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleMute({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Заглушить</button>
             <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Выгнать из сайта</button>
           </div>
 

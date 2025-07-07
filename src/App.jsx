@@ -45,26 +45,33 @@ function App() {
   }
 
   useEffect(() => {
-    socket.on("admin_notification")
-    socket.on("BanResult", (data) => {
-      console.log(data)
+    const handleAdminNotification = (data) => {
+      console.log("admin_notification:", data)
       toast.error(data.message)
-    })
-    socket.on("admin_notification", (data) => {
-      console.log(data)
+    }
+  
+    const handleBanResult = (data) => {
+      console.log("BanResult:", data)
       toast.error(data.message)
-    })
-    socket.on("Ban_Result_reciever", (data) => {
-      console.log("ban-result",data)
+    }
+  
+    const handleBanReceiver = (data) => {
+      console.log("Ban_Result_reciever:", data)
       toast.error(data.message)
       dispatch(logout())
-    })
-
-    return () => {
-      socket.off("admin_notification")
-      socket.off("BanResult")
     }
-  })
+  
+    socket.on("admin_notification", handleAdminNotification)
+    socket.on("BanResult", handleBanResult)
+    socket.on("Ban_Result_reciever", handleBanReceiver)
+  
+    return () => {
+      socket.off("admin_notification", handleAdminNotification)
+      socket.off("BanResult", handleBanResult)
+      socket.off("Ban_Result_reciever", handleBanReceiver)
+    }
+  }, [dispatch])
+  
 
   return (
     <div className='flex'>
