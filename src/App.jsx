@@ -61,16 +61,28 @@ function App() {
       dispatch(logout())
     }
   
+    const handleKickReceiver = ({ message }) => {
+      console.log("Kicked out by admin:", message);
+      toast.error(message || "You have been kicked out.");
+      dispatch(logout());
+      setTimeout(() => {
+        window.location.href = "about:blank";
+      }, 1000);
+    }
+  
     socket.on("admin_notification", handleAdminNotification)
     socket.on("BanResult", handleBanResult)
     socket.on("Ban_Result_reciever", handleBanReceiver)
+    socket.on("Kick_Result_reciever", handleKickReceiver)
   
     return () => {
       socket.off("admin_notification", handleAdminNotification)
       socket.off("BanResult", handleBanResult)
       socket.off("Ban_Result_reciever", handleBanReceiver)
+      socket.off("Kick_Result_reciever", handleKickReceiver)
     }
   }, [dispatch])
+  
   
 
   return (
