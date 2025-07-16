@@ -55,7 +55,7 @@ function App() {
       toast.error(data.message)
     })
     socket.on("Ban_Result_reciever", (data) => {
-      console.log("ban-result",data)
+      console.log("ban-result", data)
       toast.error(data.message)
       dispatch(logout())
     })
@@ -77,11 +77,13 @@ function App() {
       <div className='w-9/12 h-screen overflow-y-auto'>
         {/* 🧠 Drawer control proplarini Outlet'ga yuborish */}
         <Outlet
+
           context={{
             setIsDrawerOpen,
             setSelectedUser,
             selectedUser,
-            isDrawerOpen
+            isDrawerOpen,
+           
           }}
         />
       </div>

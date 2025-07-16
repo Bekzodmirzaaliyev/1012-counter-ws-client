@@ -29,29 +29,18 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
     }
   }
 
-  const handleMute = async ({ userID, selectedUser }) => {
-    try {
-      socket.emit("Mute", { userID, selectedUser })
-    } catch (e) {
-      toast.error("F Socket: ", e)
-    }
-  }
 
-  const handleWarn = async ({ userID, selectedUser }) => {
-    try {
-      socket.emit("Warn", { userID, selectedUser })
-    } catch (e) {
-      toast.error("F Socket: ", e)
-    }
-  }
 
-  const handleKick = async ({ userID, selectedUser }) => {
+    const handleMute = async ({ userID, selectedUser }) => {
     try {
-      socket.emit("Kick", { userID, selectedUser })
+      socket.emit("mute", { userID, selectedUser })
     } catch (e) {
       toast.error("F Socket: ", e)
     }
   }
+  
+
+  // console.log("condition", user.role === "admin" || user.role === "owner" || user.role === "moderator")
 
   return (
     <div className={`drawer drawer-end ${isOpen ? "drawer-open" : ""}`}>
@@ -60,8 +49,6 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
       <div className="drawer-side z-50">
         {/* Qora fonli overlay - bg yo‘q qilish shart emas */}
         <label htmlFor="user-drawer" className="drawer-overlay" onClick={onClose}></label>
-
-        {/* Faqat shu qismga bg beramiz */}
         <div className="menu p-4 w-96 min-h-full bg-base-200 text-base-content flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Foydalanuvchi Profili</h2>
@@ -85,27 +72,35 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
             <p><span className="font-semibold">ID:</span> {selectedUser?._id || "-"}</p>
             <p><span className="font-semibold">Role: </span> {selectedUser?.role || "-"}</p>
           </div>
+          {
+            user?.role === "admin" || user?.role === "owner" || user?.role === "moderator" ? (
+              <>
+                <div className="text-center py-2">Админ Панель</div>
+                <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-1 rounded-xl p-4 shadow-xl border-primary">
+                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "admin" })}>Назначить Админстратором</button>
+                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "moderator" })}>Назначить Модератор</button>
+                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "vip" })}>Назначить VIP</button>
+                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "user" })}>Понизить до Пользователя</button>
+                </div>
 
-          <div className="text-center py-2">Админ Панель</div>
-          <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-1 rounded-xl p-4 shadow-xl border-primary">
-            <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "admin" })}>Назначить Админстратором</button>
-            <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "moderator" })}>Назначить Модератор</button>
-            <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "vip" })}>Назначить VIP</button>
-            <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "user" })}>Понизить до Пользователя</button>
-          </div>
+                <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-2 rounded-xl p-4 shadow-xl border-error">
+                  <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleBan({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Заблокировать</button>
+                  <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Предупреждение</button>
+                  <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleMute({ userID: user._id, selectedUser: selectedUser._id })}>Заглушить</button>
+                  <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Выгнать из сайта</button>
+                </div>
+                <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-2 rounded-xl p-4 shadow-xl border-success">
+                  <button className="btn btn-soft btn-success btn-xs flex-1 text-nowrap" onClick={() => handleUnBan({ userID: user._id, selectedUser: selectedUser._id })}>Разблокировать</button>
+                </div>
 
-          <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-2 rounded-xl p-4 shadow-xl border-error">
-            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleBan({ userID: user._id, selectedUser: selectedUser._id,})}>Заблокировать</button>
-            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleWarn({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Предупреждение</button>
-            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleMute({ userID: user._id, selectedUser: selectedUser._id,})}>Заглушить</button>
-            <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleKick({ userID: user._id, selectedUser: selectedUser._id })}>Выгнать из сайта</button>
-          </div>
+              </>
+            ) : null
+          }
 
-          <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-2 rounded-xl p-4 shadow-xl border-success">
-            <button className="btn btn-soft btn-success btn-xs flex-1 text-nowrap" onClick={() => handleUnBan({ userID: user._id, selectedUser: selectedUser._id})}>Разблокировать</button>
-          </div>
 
         </div>
+        {/* Faqat shu qismga bg beramiz */}
+
       </div>
     </div>
   );
