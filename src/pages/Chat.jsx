@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { BsThreeDotsVertical } from "react-icons/bs"
+import { BsTelephone, BsThreeDotsVertical, BsFillTelephoneXFill   } from "react-icons/bs"
 import { PiTelegramLogo } from "react-icons/pi"
 import socket from "../Socket.jsx"
 import DrawerUser from "../components/DrawerUser" // ⬅️ path kerak bo‘lsa o‘zgartiring
@@ -13,9 +13,9 @@ const Chat = () => {
   const [inputValue, setInputValue] = useState("")
   const userinfo = useSelector(state => state?.auth?.user?.user)
   const [chat, setChat] = useState([])
-
+  const [status, setStatus ] = useState("вызов...")
   const [isDrawerOpen, setIsDrawerOpen] = useState(false) // ✅ Drawer state
-
+  console.log("asdf",selectedUser)
   const getUser = async () => {
     try {
       const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/auth/getUser/${user}`)
@@ -88,10 +88,13 @@ const Chat = () => {
           <p className='text-sm'>{selectedUser?.grade}</p>
         </div>
         <div>
+          <label for="my_modal_6" class="btn btn-soft btn-success"><BsTelephone />
+          </label>
           <button onClick={() => setIsDrawerOpen(true)} className='btn btn-ghost'>
             <BsThreeDotsVertical />
           </button>
         </div>
+
       </div>
 
       <div className='flex-1 h-[55%] px-4 overflow-y-auto'>
@@ -123,6 +126,24 @@ const Chat = () => {
         </button>
       </div>
 
+      <input type="checkbox" id="my_modal_6" class="modal-toggle" />
+      <div class="modal" role="dialog">
+        <div class="modal-box flex flex-col items-center">
+           <div className='flex flex-col items-center gap-5'>
+            <figure>
+              <img src={selectedUser?.profileImage}  className="size-28" alt="" />
+            </figure>
+            <div className='flex flex-col gap-1 items-center'>
+              <p className='font-semibold text-2xl'>{selectedUser?.username}</p>
+              <p className='text-sm'>{status}</p>
+            </div>
+           </div>
+           <div></div>
+          <div class="modal-action">
+            <label for="my_modal_6" class="btn btn-soft btn-error"><BsFillTelephoneXFill /></label>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
