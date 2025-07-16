@@ -5,6 +5,8 @@ import { BsTelephone, BsThreeDotsVertical, BsFillTelephoneXFill   } from "react-
 import { PiTelegramLogo } from "react-icons/pi"
 import socket from "../Socket.jsx"
 import DrawerUser from "../components/DrawerUser" // ⬅️ path kerak bo‘lsa o‘zgartiring
+import { IoCall } from "react-icons/io5";
+import { MdCallEnd } from "react-icons/md";
 
 const Chat = () => {
   const { user } = useParams()
@@ -13,9 +15,15 @@ const Chat = () => {
   const [inputValue, setInputValue] = useState("")
   const userinfo = useSelector(state => state?.auth?.user?.user)
   const [chat, setChat] = useState([])
+<<<<<<< HEAD
   const [status, setStatus ] = useState("вызов...")
   const [isDrawerOpen, setIsDrawerOpen] = useState(false) // ✅ Drawer state
   console.log("asdf",selectedUser)
+=======
+  const [status , setStatus] = useState("Вызов...")
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false) // ✅ Drawer state
+  console.log("select", selectedUser)
+>>>>>>> 5d9cdeb945ef8fd90ea17a0b3ac67f2d661d49a6
   const getUser = async () => {
     try {
       const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/auth/getUser/${user}`)
@@ -88,8 +96,14 @@ const Chat = () => {
           <p className='text-sm'>{selectedUser?.grade}</p>
         </div>
         <div>
+<<<<<<< HEAD
           <label for="my_modal_6" class="btn btn-soft btn-success"><BsTelephone />
           </label>
+=======
+          {/* Open the modal using document.getElementById('ID').showModal() method */}
+          <button className="btn btn-soft btn-success" onClick={() => document.getElementById('my_modal_5').showModal()}><IoCall /></button>
+
+>>>>>>> 5d9cdeb945ef8fd90ea17a0b3ac67f2d661d49a6
           <button onClick={() => setIsDrawerOpen(true)} className='btn btn-ghost'>
             <BsThreeDotsVertical />
           </button>
@@ -125,7 +139,25 @@ const Chat = () => {
           <PiTelegramLogo />
         </button>
       </div>
+      <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
+        <div className="modal-box">
+          <div className='flex flex-col items-center justify-center'>
+            <div className='flex flex-col items-center gap-5'>
+              <figure> <img src={selectedUser?.profileImage || "https://via.placeholder.com/64"} className='size-24 bg-base-300 rounded-full' alt="" /></figure>
+              <div className='flex flex-col items-center gap-1'>
+                <p className='text-xl font-semibold'>{selectedUser?.username}</p>
+              <p className='text-sm'>{status}</p>
+              </div>
+            </div>
+            <div className="modal-action">
+              <form method="dialog">
+                {/* if there is a button in form, it will close the modal */}
+                <button className="btn btn-soft btn-error text-2xl"><MdCallEnd /> </button>
+              </form>
+            </div>
+          </div>
 
+<<<<<<< HEAD
       <input type="checkbox" id="my_modal_6" class="modal-toggle" />
       <div class="modal" role="dialog">
         <div class="modal-box flex flex-col items-center">
@@ -144,6 +176,10 @@ const Chat = () => {
           </div>
         </div>
       </div>
+=======
+        </div>
+      </dialog>
+>>>>>>> 5d9cdeb945ef8fd90ea17a0b3ac67f2d661d49a6
     </div>
   )
 }

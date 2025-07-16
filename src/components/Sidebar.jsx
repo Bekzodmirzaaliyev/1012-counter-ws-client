@@ -88,7 +88,7 @@ const Sidebar = ({ loading, selectUser }) => {
                     <p className='font-semibold'>Мой профиль</p>
                     <div className='flex gap-2 items-center'>
                       <button className="btn" onClick={() => document.getElementById('my_modal_1').showModal()}>
-                        <MdEdit/>
+                        <MdEdit>
                       </button>
                       <dialog id="my_modal_1" className="modal">
                         <div className="modal-box">
