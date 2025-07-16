@@ -6,6 +6,8 @@ import Sidebar from './components/Sidebar.jsx'
 import DrawerUser from './components/DrawerUser.jsx'
 import { toast } from 'react-toastify';
 import { logout } from './redux/slices/authSlice.js'
+import Phonecall from '../src/components/Phonecall.jsx';
+import { FaPhone } from "react-icons/fa";
 
 function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
