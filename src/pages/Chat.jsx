@@ -4,8 +4,8 @@ import { useParams } from 'react-router-dom'
 import { BsThreeDotsVertical } from "react-icons/bs"
 import { PiTelegramLogo } from "react-icons/pi"
 import socket from "../Socket.jsx"
-import DrawerUser from "../components/DrawerUser"
-import { FaPhone, FaVideo } from "react-icons/fa6";
+import DrawerUser from "../components/DrawerUser" // ⬅️ path kerak bo‘lsa o‘zgartiring
+import { IoCall } from "react-icons/io5";
 import { MdCallEnd } from "react-icons/md";
 
 const Chat = () => {
@@ -15,9 +15,9 @@ const Chat = () => {
   const [inputValue, setInputValue] = useState("")
   const userinfo = useSelector(state => state?.auth?.user?.user)
   const [chat, setChat] = useState([])
-
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-
+  const [status , setStatus] = useState("Вызов...")
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false) // ✅ Drawer state
+  console.log("select", selectedUser)
   const getUser = async () => {
     try {
       const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/auth/getUser/${user}`)
@@ -90,7 +90,10 @@ const Chat = () => {
           <p className='font-bold text-lg'>{selectedUser?.username}</p>
           <p className='text-sm'>{selectedUser?.grade}</p>
         </div>
-        <div className="flex gap-2 items-center">
+        <div>
+          {/* Open the modal using document.getElementById('ID').showModal() method */}
+          <button className="btn btn-soft btn-success" onClick={() => document.getElementById('my_modal_5').showModal()}><IoCall /></button>
+
           <button onClick={() => setIsDrawerOpen(true)} className='btn btn-ghost'>
             <BsThreeDotsVertical />
           </button>
@@ -131,36 +134,26 @@ const Chat = () => {
           <PiTelegramLogo />
         </button>
       </div>
-
-      {/* Call modal (UI only) */}
-      <dialog id="call_modal" className="modal">
-        <div className="modal-box bg-[#1e1e1e] text-white text-center rounded-xl">
-          <img
-            src={selectedUser?.profileImage || "https://via.placeholder.com/100"}
-            className="w-24 h-24 rounded-full mx-auto border-2 border-gray-500 mb-4"
-          />
-          <h3 className="text-xl font-bold">Jur'at baby</h3>
-          <p className="text-gray-400 mt-1">
-            Если Вы хотите начать видеозвонок,<br />нажмите на значок камеры.
-          </p>
-
-          <div className="flex justify-center mt-6 gap-6">
-            <button className="btn btn-success btn-circle text-xl text-white">
-              <FaVideo />
-            </button>
-            <form method="dialog">
-              <button className="btn btn-error btn-circle text-xl text-white">
-                <MdCallEnd />
-              </button>
-            </form>
+      <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
+        <div className="modal-box">
+          <div className='flex flex-col items-center justify-center'>
+            <div className='flex flex-col items-center gap-5'>
+              <figure> <img src={selectedUser?.profileImage || "https://via.placeholder.com/64"} className='size-24 bg-base-300 rounded-full' alt="" /></figure>
+              <div className='flex flex-col items-center gap-1'>
+                <p className='text-xl font-semibold'>{selectedUser?.username}</p>
+              <p className='text-sm'>{status}</p>
+              </div>
+            </div>
+            <div className="modal-action">
+              <form method="dialog">
+                {/* if there is a button in form, it will close the modal */}
+                <button className="btn btn-soft btn-error text-2xl"><MdCallEnd /> </button>
+              </form>
+            </div>
           </div>
 
-          <form method="dialog" className="absolute right-3 top-3">
-            <button className="btn btn-sm btn-circle btn-ghost text-white">✕</button>
-          </form>
         </div>
       </dialog>
-
     </div>
   )
 }

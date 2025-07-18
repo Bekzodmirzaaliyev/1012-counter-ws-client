@@ -6,11 +6,15 @@ import Sidebar from './components/Sidebar.jsx'
 import DrawerUser from './components/DrawerUser.jsx'
 import { toast } from 'react-toastify';
 import { logout } from './redux/slices/authSlice.js'
+import { IoCall } from "react-icons/io5";
+import { SlCallOut } from "react-icons/sl";
+import { VscCallIncoming } from "react-icons/vsc";
 
 function App() {
   const [onlineUsers, setOnlineUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState([])
+  const [status, setStatus] = useState("Вам вызов...")
   const [selectedUser, setSelectedUser] = useState(null) // ✅ Drawer uchun user
   const [isDrawerOpen, setIsDrawerOpen] = useState(false) // ✅ Drawer ochiqmi yo‘qmi
   const user = useSelector(state => state.auth?.user?.user)
@@ -93,6 +97,33 @@ function App() {
           isOpen={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}
         />
+      </div>
+      <div>  {/* Open the modal using document.getElementById('ID').showModal() method */}
+        <button className="btn btn-soft btn-success" onClick={() => document.getElementById('my_modal_6').showModal()}><IoCall /></button>
+        <dialog id="my_modal_6" className="modal modal-bottom sm:modal-middle">
+          <div className="modal-box bg-accent/40 min-w-[65%] min-h-[70vh]">
+            <div className='flex flex-col items-center justify-center h-full w-full'>
+              <div className='flex flex-col items-center gap-5 w-full h-full'>
+                <figure> <img src={selectedUser?.profileImage || "https://via.placeholder.com/64"} className='size-24 bg-base-300 rounded-full' alt="" /></figure>
+                <div className='flex flex-col items-center gap-1'>
+                  <p className='text-xl font-semibold'>{selectedUser?.username || "Username"}</p>
+                  <p className='text-sm'>{status}</p>
+                </div>
+              </div>
+              <div className="modal-action">
+                <form method="dialog" className='flex gap-5'>
+                  {/* if there is a button in form, it will close the modal */}
+                  <button className="btn btn-soft btn-success text-2xl"><SlCallOut />
+                  </button>
+                  <button className="btn btn-soft btn-error text-2xl"><VscCallIncoming />
+                  </button>
+                </form>
+              </div>
+
+            </div>
+
+          </div>
+        </dialog>
       </div>
     </div>
   )
