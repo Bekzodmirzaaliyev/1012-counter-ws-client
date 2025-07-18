@@ -12,25 +12,6 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
     console.log("DEBUG MAKEADMIN: ", { userID, selectedUser, role })
     socket.emit("setAdmin", { userID, selectedUser, role })
   }
-<<<<<<< HEAD
-
-  const makeModerator = async ({ userID, selectedUser, role }) => {
-    console.log("DEBUG MAKEADMIN: ", { userID, selectedUser, role })
-    socket.emit("setAdmin", { userID, selectedUser, role })
-  }
-
-  const makeVIP = async ({ userID, selectedUser, role }) => {
-    console.log("DEBUG MAKEADMIN: ", { userID, selectedUser, role })
-    socket.emit("setAdmin", { userID, selectedUser, role })
-  }
-
-  const makeUser = async ({ userID, selectedUser, role }) => {
-    console.log("DEBUG MAKEADMIN: ", { userID, selectedUser, role })
-    socket.emit("setAdmin", { userID, selectedUser, role })
-  }
-
-=======
->>>>>>> 5d9cdeb945ef8fd90ea17a0b3ac67f2d661d49a6
   const handleBan = async ({ userID, selectedUser, reason }) => {
     try {
       socket.emit("ban", { userID, selectedUser, reason })
@@ -53,26 +34,6 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
       toast.error("F Socket: ", e)
     }
   }
-<<<<<<< HEAD
-  
-  const handleWarn = async ({ userID, selectedUser, reason}) => {
-    try {
-      socket.emit("warn", { userID, selectedUser, reason})
-    } catch (e) {
-      toast.error("F Socket: ", e)
-    }
-  }
-  
-  const handleKickout = async ({ userID, selectedUser }) => {
-    try {
-      socket.emit("kickout", { userID, selectedUser })
-    } catch (e) {
-      toast.error("F Socket: ", e)
-    }
-  }
-  
-
-=======
 
   const handleUnmute = async ({ userID, selectedUser }) => {
     try {
@@ -81,7 +42,6 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
       toast.error("F Socket: ", e)
     }
   }
->>>>>>> 5d9cdeb945ef8fd90ea17a0b3ac67f2d661d49a6
 
   const handleKick = async ({ userID, selectedUser }) => {
    
@@ -131,11 +91,7 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
                   <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleBan({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Заблокировать</button>
                   <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleWarn({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Предупреждение</button>
                   <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleMute({ userID: user._id, selectedUser: selectedUser._id })}>Заглушить</button>
-<<<<<<< HEAD
-                  <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleKickout({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Выгнать из сайта</button>
-=======
                   <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleKick({ userID: user._id, selectedUser: selectedUser._id })}>Выгнать из сайта</button>
->>>>>>> 5d9cdeb945ef8fd90ea17a0b3ac67f2d661d49a6
                 </div>
                 <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-2 rounded-xl p-4 shadow-xl border-success">
                   <button className="btn btn-soft btn-success btn-xs flex-1 text-nowrap" onClick={() => handleUnBan({ userID: user._id, selectedUser: selectedUser._id })}>Разблокировать</button>

@@ -7,6 +7,8 @@ import socket from "../Socket.jsx"
 import DrawerUser from "../components/DrawerUser" // ⬅️ path kerak bo‘lsa o‘zgartiring
 import { IoCall } from "react-icons/io5";
 import { MdCallEnd } from "react-icons/md";
+import Phonecall from '../components/Phonecall.jsx'
+import PhonecallOutgoing from '../components/PhonecallOutgoing.jsx'
 
 const Chat = () => {
   const { user } = useParams()
@@ -17,6 +19,8 @@ const Chat = () => {
   const [chat, setChat] = useState([])
   const [status , setStatus] = useState("Вызов...")
   const [isDrawerOpen, setIsDrawerOpen] = useState(false) // ✅ Drawer state
+  const [isPhoneOpen, setIsPhoneOpen] = useState(false) // ✅ Drawer state
+  const [isCalling, setIsCalling] = useState(false) // ✅ Drawer state
   console.log("select", selectedUser)
   const getUser = async () => {
     try {

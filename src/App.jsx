@@ -57,10 +57,6 @@ function App() {
     const handleBanResult = (data) => {
       console.log("BanResult:", data)
       toast.error(data.message)
-    })
-    socket.on("Ban_Result_reciever", (data) => {
-      console.log("ban-result", data)
-      toast.error(data.message)
       dispatch(logout())
     }
   
@@ -75,16 +71,17 @@ function App() {
   
     socket.on("admin_notification", handleAdminNotification)
     socket.on("BanResult", handleBanResult)
-    socket.on("Ban_Result_reciever", handleBanReceiver)
+    socket.on("Ban_Result_reciever", handleBanResult)
     socket.on("Kick_Result_reciever", handleKickReceiver)
   
     return () => {
       socket.off("admin_notification", handleAdminNotification)
       socket.off("BanResult", handleBanResult)
-      socket.off("Ban_Result_reciever", handleBanReceiver)
+      socket.off("Ban_Result_reciever", handleBanResult)
       socket.off("Kick_Result_reciever", handleKickReceiver)
     }
   }, [dispatch])
+  
   
   
 
