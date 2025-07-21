@@ -49,6 +49,7 @@ const Chat = () => {
       setChat(prev => [...prev, data]);
     });
 
+
     socket.on("call_accepted", () => {
       setStatus("Ulandi");
       startTimer();

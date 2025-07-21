@@ -1,25 +1,29 @@
-import React, { useEffect, useRef, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "./Components/Sidebar";
 import socket from "./Socket";
 import { setIncomingCall, clearIncomingCall } from "./redux/slices/callSlice";
 import { MdCallEnd } from "react-icons/md";
+import { useState } from "react";
+import { useRef } from "react";
+import { useEffect } from "react";
 
 const App = () => {
   const dispatch = useDispatch();
-  const userinfo = useSelector((state) => state.auth.user?.user);
-  const incomingCall = useSelector((state) => state.call.incomingCall);
   const navigate = useNavigate();
 
+  const userinfo = useSelector((state) => state.auth.user?.user);
+  const incomingCall = useSelector((state) => state.call.incomingCall);
 
   const [peerConnection, setPeerConnection] = useState(null);
   const [callDuration, setCallDuration] = useState(0);
   const [status, setStatus] = useState("Qo‘ng‘iroq...");
+
   const timerRef = useRef(null);
   const localStreamRef = useRef(null);
   const remoteStreamRef = useRef(new MediaStream());
   const remoteAudioRef = useRef(null);
+  const ringtoneRef = useRef(new Audio("/ringtone.mp3")); // 🔔 Ringtone audio
 
   useEffect(() => {
     if (userinfo) {
@@ -33,7 +37,7 @@ const App = () => {
 
   const startTimer = () => {
     timerRef.current = setInterval(() => {
-      setCallDuration(prev => prev + 1);
+      setCallDuration((prev) => prev + 1);
     }, 1000);
   };
 
@@ -49,16 +53,37 @@ const App = () => {
     }
     remoteStreamRef.current = new MediaStream();
     if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+    ringtoneRef.current.pause();
+    ringtoneRef.current.currentTime = 0;
   };
 
   const acceptCall = async (data) => {
     document.getElementById("my_modal_call").showModal();
-    setStatus("Qabul qilindi");
+    setStatus("Ulanmoqda...");
+
+    ringtoneRef.current.pause();
+    ringtoneRef.current.currentTime = 0;
 
     const localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
     localStreamRef.current = localStream;
 
-    const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' },
+        {
+          urls: 'turn:turn.xirsys.com:3478?transport=udp',
+          username: 'bekzodmirzaaliyev27Gmail.com',
+          credential: '6862442'
+        },
+        {
+          urls: 'turn:turn.xirsys.com:3478?transport=tcp',
+          username: 'bekzodmirzaaliyev27Gmail.com',
+          credential: '6862442'
+        }
+      ]
+    });
+
     localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
 
     pc.onicecandidate = (e) => {
@@ -83,8 +108,9 @@ const App = () => {
 
   useEffect(() => {
     socket.on("incoming_call", (data) => {
-      console.log("📞 Incoming call:", data);
       dispatch(setIncomingCall(data));
+      ringtoneRef.current.loop = true;
+      ringtoneRef.current.play();
     });
 
     socket.on("call_ended", stopCall);
@@ -94,8 +120,22 @@ const App = () => {
       localStreamRef.current = localStream;
 
       const pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:global.stun.twilio.com:3478' },
+          {
+            urls: 'turn:turn.xirsys.com:3478?transport=udp',
+            username: 'bekzodmirzaaliyev27Gmail.com',
+            credential: '6862442'
+          },
+          {
+            urls: 'turn:turn.xirsys.com:3478?transport=tcp',
+            username: 'bekzodmirzaaliyev27Gmail.com',
+            credential: '6862442'
+          }
+        ]
       });
+
       localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
 
       pc.onicecandidate = (e) => {
@@ -118,6 +158,7 @@ const App = () => {
       await pc.setLocalDescription(answer);
 
       socket.emit("make_answer", { to: from, answer, from: socket.id });
+
       setPeerConnection(pc);
       startTimer();
       document.getElementById("my_modal_call").showModal();
@@ -143,14 +184,14 @@ const App = () => {
     <div className="flex h-screen">
       <Sidebar selectUser={handleSelectUser} />
       <div className="flex-1">
-        {/* Incoming Call Modal */}
+        {/* Incoming call modal */}
         {incomingCall && (
           <dialog id="incoming_modal" className="modal modal-bottom sm:modal-middle" open>
             <div className="modal-box">
-              <h3 className="font-bold text-lg">Qo‘ng‘iroq</h3>
+              <h3 className="font-bold text-lg">📞 Kiruvchi qo‘ng‘iroq</h3>
               <p className="py-4">Sizga {incomingCall.from?.username} dan qo‘ng‘iroq kelyapti</p>
-              <div className="modal-action">
-                <form method="dialog" className="flex gap-3">
+              <div className="modal-action flex justify-center gap-4">
+                <form method="dialog">
                   <button className="btn btn-success" onClick={() => {
                     acceptCall(incomingCall);
                     dispatch(clearIncomingCall());
@@ -158,6 +199,8 @@ const App = () => {
                   <button className="btn btn-error" onClick={() => {
                     socket.emit("reject_call", { to: incomingCall.socketId });
                     dispatch(clearIncomingCall());
+                    ringtoneRef.current.pause();
+                    ringtoneRef.current.currentTime = 0;
                   }}>Rad etish</button>
                 </form>
               </div>
@@ -165,12 +208,12 @@ const App = () => {
           </dialog>
         )}
 
-        {/* Active Call Modal */}
+        {/* Ongoing call modal */}
         <dialog id="my_modal_call" className="modal modal-bottom sm:modal-middle">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">Audio qo‘ng‘iroq</h3>
+          <div className="modal-box text-center">
+            <h3 className="text-lg font-bold">🔊 Audio qo‘ng‘iroq</h3>
             <p className="py-2">{status} | {formatTime(callDuration)}</p>
-            <div className="modal-action">
+            <div className="modal-action justify-center">
               <form method="dialog">
                 <button className="btn btn-error" onClick={stopCall}>
                   <MdCallEnd className="text-xl" />
