@@ -29,6 +29,7 @@ const Chat = () => {
   const [caller, setCaller] = useState(null);
   const [callStatus, setCallStatus] = useState("");
   const audioRef = useRef(null);
+  const [showCallModal, setShowCallModal] = useState(false); // Add this to your state
 
   // Get user data
   useEffect(() => {
@@ -260,54 +261,57 @@ const Chat = () => {
   }, [remoteStream]);
 
   return (
-    {showCallModal && (
-      <dialog id="call_modal" className="modal modal-bottom sm:modal-middle" open>
+    <>
+      <dialog id="call_modal" className="modal modal-bottom sm:modal-middle" open={isIncomingCall || isCalling}>
         <div className="modal-box">
           <div className='flex flex-col items-center justify-center'>
             <div className='flex flex-col items-center gap-5'>
               <figure>
                 <img 
-                  src={incomingCall?.from.profileImage || "https://via.placeholder.com/64"} 
+                  src={isIncomingCall ? caller?.profileImage : selectedUser?.profileImage || "https://via.placeholder.com/64"} 
                   className='size-24 bg-base-300 rounded-full' 
                   alt="Caller" 
                 />
               </figure>
               <div className='flex flex-col items-center gap-1'>
                 <p className='text-xl font-semibold'>
-                  {incomingCall?.from.username}
+                  {isIncomingCall ? caller?.username : selectedUser?.username}
                 </p>
                 <p className='text-sm'>{callStatus}</p>
               </div>
             </div>
             
             <div className="modal-action">
-              {incomingCall && (
+              {isIncomingCall ? (
                 <div className="flex gap-4">
                   <button 
-                    onClick={() => {
-                      handleRejectCall();
-                      setShowCallModal(false);
-                    }}
+                    onClick={handleRejectCall}
                     className="btn btn-error text-2xl"
                   >
                     <MdCallEnd />
                   </button>
                   <button 
-                    onClick={() => {
-                      handleAcceptCall();
-                      setCallStatus("Call in progress");
-                    }}
+                    onClick={handleAcceptCall}
                     className="btn btn-success text-2xl"
                   >
                     <IoCall />
                   </button>
                 </div>
+              ) : (
+                <button 
+                  onClick={handleEndCall}
+                  className="btn btn-error text-2xl"
+                >
+                  <MdCallEnd />
+                </button>
               )}
             </div>
           </div>
         </div>
       </dialog>
-    )};
-  )}
+  
+    </>
+  );
+};
 
-export default Chat;
+export default Chat
