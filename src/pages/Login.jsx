@@ -47,7 +47,7 @@ export default function Login() {
       // Muvaffaqiyatli login
       dispatch(login(response));
       navigate("/");
-      toast.success("✅ Xush kelibsiz!");
+      toast.success("Xush kelibsiz!");
     } catch (e) {
       console.log("Error: ", e);
       toast.error("❌ Server bilan ulanishda xatolik");

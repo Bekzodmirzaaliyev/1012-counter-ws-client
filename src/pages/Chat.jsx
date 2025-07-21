@@ -1,8 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { BsThreeDotsVertical } from "react-icons/bs";
-import { PiTelegramLogo } from "react-icons/pi";
+// ✅ Full call logic implemented in this component with incoming call modal, timer, and cleanup
+import React, { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
+import { BsThreeDotsVertical } from "react-icons/bs"
+import { PiTelegramLogo } from "react-icons/pi"
+import socket from "../Socket.jsx"
+import DrawerUser from "../components/DrawerUser"
 import { IoCall } from "react-icons/io5";
 import { MdCallEnd } from "react-icons/md";
 import socket from "../Socket.jsx";
@@ -15,179 +18,54 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [inputValue, setInputValue] = useState("");
-  const userinfo = useSelector(state => state?.auth?.user?.user);
   const [chat, setChat] = useState([]);
+  const [status, setStatus] = useState("Вызов...");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  
-  // Call related states
-  const [localStream, setLocalStream] = useState(null);
-  const [remoteStream, setRemoteStream] = useState(null);
   const [peerConnection, setPeerConnection] = useState(null);
   const [isCalling, setIsCalling] = useState(false);
-  const [isPhoneOpen, serIsphineOpen] = useState(false);
-  const [isIncomingCall, setIsIncomingCall] = useState(false);
-  const [caller, setCaller] = useState(null);
-  const [callStatus, setCallStatus] = useState("");
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [callDuration, setCallDuration] = useState(0);
+  const timerRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const remoteStreamRef = useRef(new MediaStream());
   const audioRef = useRef(null);
-  const [showCallModal, setShowCallModal] = useState(false); // Add this to your state
-
-  // Get user data
-  useEffect(() => {
-    const getUser = async () => {
-      try {
-        const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/auth/getUser/${user}`);
-        const response = await request.json();
-        setSelectedUser(response);
-      } catch (e) {
-        console.log("SERVER ERROR: ", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    setLoading(true);
-    getUser();
-  }, [user]);
-
-  // Get chat messages
-  useEffect(() => {
-    const getChat = async () => {
-      try {
-        const request = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/message/${userinfo._id}/${user}`);
-        const response = await request.json();
-        setChat(response);
-      } catch (e) {
-        console.log("SERVER ERROR: ", e);
-      }
-    };
-    getChat();
-  }, [user]);
-
-  // Setup WebRTC connection
-  const setupWebRTC = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      setLocalStream(stream);
-      
-      const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-      const pc = new RTCPeerConnection(configuration);
-      setPeerConnection(pc);
-      
-      stream.getTracks().forEach(track => pc.addTrack(track, stream));
-      
-      pc.ontrack = (event) => {
-        setRemoteStream(event.streams[0]);
-      };
-      
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit("ice_candidate", {
-            to: isIncomingCall ? caller._id : selectedUser._id,
-            candidate: event.candidate
-          });
-        }
-      };
-      
-      return pc;
-    } catch (error) {
-      console.error("Error setting up WebRTC:", error);
-    }
-  };
+  const userinfo = useSelector(state => state?.auth?.user?.user);
 
   // Socket event listeners
   useEffect(() => {
-    const handleIncomingCall = (data) => {
-      setCaller(data.from);
-      setIsIncomingCall(true);
-      setCallStatus("Incoming call...");
-      document.getElementById('call_modal').showModal();
-    };
+    const receiveMessage = (data) => setChat(prev => [...prev, data]);
+    socket.on("receive_message", receiveMessage);
+    return () => socket.off("receive_message", receiveMessage);
+  }, []);
 
-    const handleCallAccepted = async () => {
-      setCallStatus("Call connected");
-      const pc = await setupWebRTC();
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      socket.emit("offer", {
-        to: selectedUser._id,
-        offer: offer
-      });
-    };
-
-    const handleCallRejected = () => {
-      setIsCalling(false);
-      setCallStatus("Call rejected");
-      setTimeout(() => document.getElementById('call_modal').close(), 2000);
-    };
-
-    const handleCallEnded = () => {
-      setIsCalling(false);
-      setIsIncomingCall(false);
-      setCallStatus("Call ended");
-      cleanupMedia();
-      setTimeout(() => document.getElementById('call_modal').close(), 2000);
-    };
-
-    const handleIceCandidate = (candidate) => {
-      if (peerConnection) {
-        peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+  useEffect(() => {
+    setLoading(true);
+    const getUser = async () => {
+      try {
+        const res = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/auth/getUser/${user}`);
+        const data = await res.json();
+        setSelectedUser(data);
+      } catch (err) {
+        console.log("getUser error:", err);
+      } finally {
+        setLoading(false);
       }
-    };
+    }
+    getUser();
+  }, [user]);
 
-    const handleOffer = async (offer) => {
-      const pc = await setupWebRTC();
-      await pc.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      socket.emit("answer", {
-        to: offer.from._id,
-        answer: answer
-      });
-    };
-
-    const handleAnswer = async (answer) => {
-      if (peerConnection) {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+  useEffect(() => {
+    const getChat = async () => {
+      try {
+        const res = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/message/${userinfo._id}/${user}`);
+        const data = await res.json();
+        setChat(data);
+      } catch (err) {
+        console.log("getChat error:", err);
       }
-    };
-
-    const handleReceiveMessage = (data) => {
-      setChat(prev => [...prev, data]);
-    };
-
-    socket.on("receive_message", handleReceiveMessage);
-    socket.on("incoming_call", handleIncomingCall);
-    socket.on("call_accepted", handleCallAccepted);
-    socket.on("call_rejected", handleCallRejected);
-    socket.on("call_ended", handleCallEnded);
-    socket.on("ice_candidate", handleIceCandidate);
-    socket.on("offer", handleOffer);
-    socket.on("answer", handleAnswer);
-
-    return () => {
-      socket.off("receive_message", handleReceiveMessage);
-      socket.off("incoming_call", handleIncomingCall);
-      socket.off("call_accepted", handleCallAccepted);
-      socket.off("call_rejected", handleCallRejected);
-      socket.off("call_ended", handleCallEnded);
-      socket.off("ice_candidate", handleIceCandidate);
-      socket.off("offer", handleOffer);
-      socket.off("answer", handleAnswer);
-      cleanupMedia();
-    };
-  }, [peerConnection, isIncomingCall, caller, selectedUser]);
-
-  // Clean up media streams
-  const cleanupMedia = () => {
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-      setLocalStream(null);
     }
-    if (peerConnection) {
-      peerConnection.close();
-      setPeerConnection(null);
-    }
-    setRemoteStream(null);
-  };
+    getChat();
+  }, [user]);
 
   // Message handlers
   const sendMessage = (e) => {
@@ -202,116 +80,288 @@ const Chat = () => {
     setInputValue("");
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") sendMessage(e);
-  };
-
   const typingHandler = (e) => {
     setInputValue(e.target.value);
     socket.emit("typing", { from: userinfo, to: selectedUser });
   };
 
-  // Call handlers
-  const handleStartCall = async () => {
-    setIsCalling(true);
-    setCallStatus("Calling...");
-    await setupWebRTC();
-    socket.emit("start_call", {
-      from: userinfo,
-      to: selectedUser
-    });
-    document.getElementById('call_modal').showModal();
+  const startCallTimer = () => {
+    timerRef.current = setInterval(() => {
+      setCallDuration((prev) => prev + 1);
+    }, 1000);
   };
 
-  const handleAcceptCall = () => {
-    socket.emit("accept_call", {
-      from: caller,
-      to: userinfo
-    });
-    setIsIncomingCall(false);
-    setCallStatus("Call in progress");
-  };
-
-  const handleRejectCall = () => {
-    socket.emit("reject_call", {
-      from: caller,
-      to: userinfo
-    });
-    setIsIncomingCall(false);
-    setCallStatus("Call rejected");
-    setTimeout(() => document.getElementById('call_modal').close(), 2000);
-  };
-
-  const handleEndCall = () => {
-    socket.emit("end_call", {
-      from: userinfo,
-      to: selectedUser._id
-    });
+  const stopCall = () => {
+    if (peerConnection) peerConnection.close();
+    setPeerConnection(null);
     setIsCalling(false);
-    setIsIncomingCall(false);
-    cleanupMedia();
-    document.getElementById('call_modal').close();
+    setIncomingCall(null);
+    setCallDuration(0);
+    clearInterval(timerRef.current);
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+    }
+    remoteStreamRef.current = new MediaStream();
+    if (audioRef.current) audioRef.current.srcObject = null;
   };
 
-  // Update audio element when remote stream changes
+  const handleCall = async () => {
+    document.getElementById('my_modal_5').showModal();
+    setIsCalling(true);
+    setStatus("Вызов...");
+
+    const localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    localStreamRef.current = localStream;
+    if (audioRef.current) audioRef.current.srcObject = remoteStreamRef.current;
+
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        socket.emit("ice_candidate", {
+          to: selectedUser.socketId,
+          candidate: e.candidate,
+          from: socket.id
+        });
+      }
+    };
+
+    pc.ontrack = (e) => {
+      e.streams[0].getTracks().forEach(track => remoteStreamRef.current.addTrack(track));
+      if (audioRef.current) audioRef.current.srcObject = remoteStreamRef.current;
+    };
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    // ✅ KERAKLI QO‘NG‘Iroq event
+    socket.emit("call_user", {
+      to: selectedUser.socketId,
+      from: socket.id,
+      user: userinfo, // foydalanuvchi haqida info borishi kerak
+    });
+
+    socket.emit("make_offer", {
+      to: selectedUser.socketId,
+      offer,
+      from: socket.id
+    });
+
+    setPeerConnection(pc);
+  };
+
+
   useEffect(() => {
-    if (audioRef.current && remoteStream) {
-      audioRef.current.srcObject = remoteStream;
-    }
-  }, [remoteStream]);
+    socket.on("answer_received", async ({ answer }) => {
+      if (peerConnection) {
+        await peerConnection.setRemoteDescription(answer);
+        startCallTimer();
+      }
+    });
+
+    socket.on("ice_candidate_received", async ({ candidate }) => {
+      if (peerConnection) await peerConnection.addIceCandidate(candidate);
+    });
+
+    socket.on("call_rejected", () => {
+      setStatus("Call rejected");
+      stopCall();
+    });
+
+    socket.on("call_accepted", () => {
+      setStatus("Call connected");
+      startCallTimer();
+    });
+
+    socket.on("incoming_call", ({ from, socketId }) => {
+      setIncomingCall({ from, socketId });
+      document.getElementById('incoming_modal').showModal();
+    });
+
+    const handleCall = async () => {
+      document.getElementById('my_modal_5').showModal();
+      setIsCalling(true);
+      setStatus("Вызов...");
+
+      const localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+      localStreamRef.current = localStream;
+      if (audioRef.current) audioRef.current.srcObject = remoteStreamRef.current;
+
+      const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          socket.emit("ice_candidate", {
+            to: selectedUser.socketId,
+            candidate: e.candidate,
+            from: socket.id
+          });
+        }
+      };
+
+      pc.ontrack = (e) => {
+        e.streams[0].getTracks().forEach(track => remoteStreamRef.current.addTrack(track));
+        if (audioRef.current) audioRef.current.srcObject = remoteStreamRef.current;
+      };
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      // ✅ KERAKLI QO‘NG‘Iroq event
+      socket.emit("call_user", {
+        to: selectedUser.socketId,
+        from: socket.id,
+        user: userinfo, // foydalanuvchi haqida info borishi kerak
+      });
+
+      socket.emit("make_offer", {
+        to: selectedUser.socketId,
+        offer,
+        from: socket.id
+      });
+
+      setPeerConnection(pc);
+    };
+
+
+    socket.on("call_ended", stopCall);
+
+    return () => {
+      socket.off("answer_received");
+      socket.off("ice_candidate_received");
+      socket.off("call_rejected");
+      socket.off("call_accepted");
+      socket.off("incoming_call");
+      socket.off("call_ended");
+    };
+  }, [peerConnection]);
+
+  const acceptIncoming = async () => {
+    setIsCalling(true);
+    setStatus("Qo‘ng‘iroq qabul qilindi");
+    document.getElementById('my_modal_5').showModal();
+    document.getElementById('incoming_modal').close();
+
+    const localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    localStreamRef.current = localStream;
+    if (audioRef.current) audioRef.current.srcObject = remoteStreamRef.current;
+
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        socket.emit("ice_candidate", {
+          to: incomingCall.socketId,
+          candidate: e.candidate,
+          from: socket.id
+        });
+      }
+    };
+
+    pc.ontrack = (e) => {
+      e.streams[0].getTracks().forEach(track => remoteStreamRef.current.addTrack(track));
+      if (audioRef.current) audioRef.current.srcObject = remoteStreamRef.current;
+    };
+
+    setPeerConnection(pc);
+    socket.emit("accept_call", { to: incomingCall.socketId, from: socket.id });
+  };
+
+  const formatTime = (seconds) => {
+    const min = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const sec = String(seconds % 60).padStart(2, '0');
+    return `${min}:${sec}`;
+  };
 
   return (
-    <>
-      <dialog id="call_modal" className="modal modal-bottom sm:modal-middle" open={isIncomingCall || isCalling}>
+    <div className='flex flex-col h-screen'>
+      <DrawerUser selectedUser={selectedUser} isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+      <div className='w-full p-5 bg-base-300 flex items-center justify-between'>
+        <div>
+          <p className='font-bold text-lg'>{selectedUser?.username}</p>
+          <p className='text-sm'>{selectedUser?.grade}</p>
+        </div>
+        <div>
+          <button className="btn btn-soft btn-success" onClick={handleCall}><IoCall /></button>
+          <button onClick={() => setIsDrawerOpen(true)} className='btn btn-ghost'>
+            <BsThreeDotsVertical />
+          </button>
+        </div>
+      </div>
+
+      <div className='flex-1 h-[55%] px-4 overflow-y-auto'>
+        {chat?.map((item, id) => (
+          <div key={id} className={`chat flex flex-col w-full ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
+            <div className={`flex items-end gap-4 max-w-[65%] ${item.from === userinfo._id ? "flex-row-reverse" : "flex-row"}`}>
+              <figure>
+                <img src={selectedUser?.profileImage || "https://via.placeholder.com/64"} className='size-10 bg-base-300 rounded-full' alt="" />
+              </figure>
+              <div className={`chat-bubble flex-1 ${item.from === userinfo._id ? "chat-bubble-primary" : "chat-bubble-secondary"}`}>
+                <p className='break-words w-full'>{item?.text}</p>
+                <p className='text-white/70 text-end text-xs'>{item?.timeStamp?.slice(11, 16)}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className='w-full py-5 px-5 bg-base-300 flex gap-2'>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={typingHandler}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage(e)}
+          className='input input-bordered w-full'
+        />
+        <button className='btn btn-soft btn-primary' onClick={sendMessage}>
+          <PiTelegramLogo />
+        </button>
+      </div>
+
+      <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
         <div className="modal-box">
           <div className='flex flex-col items-center justify-center'>
             <div className='flex flex-col items-center gap-5'>
               <figure>
-                <img 
-                  src={isIncomingCall ? caller?.profileImage : selectedUser?.profileImage || "https://via.placeholder.com/64"} 
-                  className='size-24 bg-base-300 rounded-full' 
-                  alt="Caller" 
-                />
+                <img src={selectedUser?.profileImage || "https://via.placeholder.com/64"} className='size-24 bg-base-300 rounded-full' alt="" />
               </figure>
               <div className='flex flex-col items-center gap-1'>
-                <p className='text-xl font-semibold'>
-                  {isIncomingCall ? caller?.username : selectedUser?.username}
-                </p>
-                <p className='text-sm'>{callStatus}</p>
+                <p className='text-xl font-semibold'>{selectedUser?.username}</p>
+                <p className='text-sm'>{status} | {formatTime(callDuration)}</p>
               </div>
             </div>
             
             <div className="modal-action">
-              {isIncomingCall ? (
-                <div className="flex gap-4">
-                  <button 
-                    onClick={handleRejectCall}
-                    className="btn btn-error text-2xl"
-                  >
-                    <MdCallEnd />
-                  </button>
-                  <button 
-                    onClick={handleAcceptCall}
-                    className="btn btn-success text-2xl"
-                  >
-                    <IoCall />
-                  </button>
-                </div>
-              ) : (
-                <button 
-                  onClick={handleEndCall}
-                  className="btn btn-error text-2xl"
-                >
-                  <MdCallEnd />
-                </button>
-              )}
+              <form method="dialog">
+                <button className="btn btn-soft btn-error text-2xl" onClick={stopCall}><MdCallEnd /></button>
+              </form>
             </div>
+            <audio ref={audioRef} autoPlay></audio>
           </div>
         </div>
       </dialog>
-  
-    </>
+
+      <dialog id="incoming_modal" className="modal modal-bottom sm:modal-middle">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Kirish qo‘ng‘iroq</h3>
+          <p className="py-4">Kimdandir sizga audio qo‘ng‘iroq kelmoqda</p>
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn btn-success" onClick={acceptIncoming}>Qabul qilish</button>
+              <button className="btn btn-error" onClick={() => {
+                socket.emit("reject_call", { to: incomingCall.socketId });
+                document.getElementById('incoming_modal').close();
+              }}>Rad etish</button>
+            </form>
+          </div>
+        </div>
+      </dialog>
+    </div>
   );
 };
 
-export default Chat
+export default Chat;
