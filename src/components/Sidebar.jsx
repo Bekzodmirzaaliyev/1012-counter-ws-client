@@ -14,7 +14,9 @@ import { toast } from "react-toastify";
 
 const Sidebar = ({ loading, selectUser }) => {
   const user = useSelector(state => state.auth?.user?.user);
+  const [allUsers, setAllUsers] = useState([])
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [searchUser, setSearchUser] = useState("")
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -31,7 +33,20 @@ const Sidebar = ({ loading, selectUser }) => {
     });
   };
 
-
+  const getAllUsers = async () => {
+    try {
+      const request = await fetch("http://localhost:8000/api/v1/auth/getAllUsers")
+      const response = await request.json()
+      setAllUsers(response)
+    } catch (e) {
+      console.log("failed to fetch")
+    }
+  }
+  console.log(allUsers[0]?.username)
+  const filteredUsers = allUsers.filter(user =>
+    user.username.toLowerCase().includes(searchUser.toLowerCase())
+  );
+  console.log("gey", filteredUsers)
   // X tugmasi bosilganda drawer'ni yopish
   const handleCloseDrawer = () => {
     const drawerToggle = document.getElementById('my-drawer');
@@ -56,7 +71,9 @@ const Sidebar = ({ loading, selectUser }) => {
     };
   }, [dispatch, navigate]);
 
-
+  useEffect(() => {
+    getAllUsers()
+  }, [])
 
   useEffect(() => {
     socket.on('users', (updatedUsers) => {
@@ -88,7 +105,7 @@ const Sidebar = ({ loading, selectUser }) => {
                     <p className='font-semibold'>Мой профиль</p>
                     <div className='flex gap-2 items-center'>
                       <button className="btn" onClick={() => document.getElementById('my_modal_1').showModal()}>
-                        <MdEdit>
+                        <MdEdit />
                       </button>
                       <dialog id="my_modal_1" className="modal">
                         <div className="modal-box">
@@ -154,7 +171,7 @@ const Sidebar = ({ loading, selectUser }) => {
                 <path d='m21 21-4.3-4.3'></path>
               </g>
             </svg>
-            <input type='search' className='grow flex-1' placeholder='Search' />
+            <input type='search' onChange={(e) => setSearchUser(e.target.value)} className='grow flex-1' placeholder='Search' />
           </label>
         </div>
 
