@@ -11,18 +11,17 @@ import { ImCross } from 'react-icons/im';
 import socket from '../Socket';
 import { toast } from "react-toastify";
 
-
 const Sidebar = ({ loading, selectUser }) => {
   const user = useSelector(state => state.auth?.user?.user);
-  const [allUsers, setAllUsers] = useState([])
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const [searchUser, setSearchUser] = useState("")
+  const [searchUser, setSearchUser] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     dispatch(logout());
   };
+
   const handleDeleteUser = (targetUser) => {
     const confirmDelete = window.confirm(`${targetUser.username} ni rostdan ham o‘chirmoqchimisiz?`);
     if (!confirmDelete) return;
@@ -33,27 +32,18 @@ const Sidebar = ({ loading, selectUser }) => {
     });
   };
 
-  const getAllUsers = async () => {
-    try {
-      const request = await fetch("http://localhost:8000/api/v1/auth/getAllUsers")
-      const response = await request.json()
-      setAllUsers(response)
-    } catch (e) {
-      console.log("failed to fetch")
-    }
-  }
-  console.log(allUsers[0]?.username)
-  const filteredUsers = allUsers.filter(user =>
-    user.username.toLowerCase().includes(searchUser.toLowerCase())
+  // 🔍 Faqat online foydalanuvchilarni filter qiladi
+  const filteredUsers = onlineUsers.filter((u) =>
+    u.username.toLowerCase().includes(searchUser.toLowerCase())
   );
-  console.log("gey", filteredUsers)
-  // X tugmasi bosilganda drawer'ni yopish
+
   const handleCloseDrawer = () => {
     const drawerToggle = document.getElementById('my-drawer');
     if (drawerToggle) {
-      drawerToggle.checked = false; // Drawer'ni yopish
+      drawerToggle.checked = false;
     }
   };
+
   useEffect(() => {
     socket.on("deleted_notice", (data) => {
       toast.error(data.message);
@@ -72,12 +62,7 @@ const Sidebar = ({ loading, selectUser }) => {
   }, [dispatch, navigate]);
 
   useEffect(() => {
-    getAllUsers()
-  }, [])
-
-  useEffect(() => {
     socket.on('users', (updatedUsers) => {
-      console.log('updatedUsers', updatedUsers);
       setOnlineUsers(updatedUsers);
     });
 
@@ -171,7 +156,12 @@ const Sidebar = ({ loading, selectUser }) => {
                 <path d='m21 21-4.3-4.3'></path>
               </g>
             </svg>
-            <input type='search' onChange={(e) => setSearchUser(e.target.value)} className='grow flex-1' placeholder='Search' />
+            <input
+              type='search'
+              onChange={(e) => setSearchUser(e.target.value)}
+              className='grow flex-1'
+              placeholder='Search'
+            />
           </label>
         </div>
 
@@ -197,8 +187,8 @@ const Sidebar = ({ loading, selectUser }) => {
           </div>
         ) : (
           <div className='h-full w-full overflow-y-auto p-2 flex flex-col gap-5'>
-            {onlineUsers?.length > 0 ? (
-              onlineUsers.map((item, index) => (
+            {filteredUsers?.length > 0 ? (
+              filteredUsers.map((item, index) => (
                 <div
                   key={index}
                   className={`${item?.role === 'owner'
@@ -229,20 +219,15 @@ const Sidebar = ({ loading, selectUser }) => {
                     </div>
                   </div>
                   <div className='text-sm capitalize flex items-center gap-2'>
-                    {item?.role === 'owner' && (
-                      <p className='text-shadow-md text-error text-shadow-error/80'>{item?.role}</p>
-                    )}
-                    {item?.role === 'admin' && (
-                      <p className='text-shadow-md text-info text-shadow-info/80'>{item?.role}</p>
-                    )}
-                    {item?.role === 'moderator' && (
-                      <p className='text-shadow-md text-success text-shadow-success/80'>{item?.role}</p>
-                    )}
-                    {item?.role === 'vip' && (
-                      <p className='text-shadow-md text-warning text-shadow-warning/80'>{item?.role}</p>
+                    {["owner", "admin", "moderator", "vip"].includes(item?.role) && (
+                      <p className={`text-shadow-md ${{
+                        owner: 'text-error',
+                        admin: 'text-info',
+                        moderator: 'text-success',
+                        vip: 'text-warning',
+                      }[item.role]}`}>{item?.role}</p>
                     )}
 
-                    {/* 🗑 Delete tugmasi */}
                     {user?._id !== item._id && ["owner", "admin"].includes(user?.role) && (
                       <button
                         className='btn btn-error btn-sm'
@@ -255,11 +240,10 @@ const Sidebar = ({ loading, selectUser }) => {
                       </button>
                     )}
                   </div>
-
                 </div>
               ))
             ) : (
-              <div className='text-center text-sm text-gray-400'>No online users</div>
+              <div className='text-center text-sm text-gray-400'>No matching users</div>
             )}
           </div>
         )}

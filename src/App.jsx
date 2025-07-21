@@ -1,337 +1,190 @@
-// src/App.jsx
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import socket from "./Socket.jsx";
-import Sidebar from "./components/Sidebar.jsx";
-import DrawerUser from "./components/DrawerUser.jsx";
-import { toast } from "react-toastify";
-import { logout } from "./redux/slices/authSlice.js";
-import { IoCall } from "react-icons/io5";
+import Sidebar from "./components/Sidebar";
+import socket from "./Socket";
+import { setIncomingCall, clearIncomingCall } from "./redux/slices/callSlice";
 import { MdCallEnd } from "react-icons/md";
-import { SlCallOut } from "react-icons/sl";
 
-function App() {
-  const [onlineUsers, setOnlineUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [callStatus, setCallStatus] = useState("Idle");
-  const user = useSelector((state) => state.auth?.user?.user);
-  const navigate = useNavigate();
+const App = () => {
   const dispatch = useDispatch();
-  const localAudioRef = useRef(null);
-  const remoteAudioRef = useRef(null);
-  const peerConnectionRef = useRef(null);
+  const userinfo = useSelector((state) => state.auth.user?.user);
+  const incomingCall = useSelector((state) => state.call.incomingCall);
+  const navigate = useNavigate();
+
+
+  const [peerConnection, setPeerConnection] = useState(null);
+  const [callDuration, setCallDuration] = useState(0);
+  const [status, setStatus] = useState("Qo‘ng‘iroq...");
+  const timerRef = useRef(null);
   const localStreamRef = useRef(null);
+  const remoteStreamRef = useRef(new MediaStream());
+  const remoteAudioRef = useRef(null);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
+    if (userinfo) {
+      socket.emit("connected", userinfo);
     }
-    socket.emit("connected", user);
-  }, [user, navigate]);
+  }, [userinfo]);
 
-  const getAllUsers = async () => {
-    try {
-      const request = await fetch(
-        "https://one012-counter-ws-server.onrender.com/api/v1/auth/getAllUsers"
-      );
-      const response = await request.json();
-      setUsers(response);
-    } catch (e) {
-      console.error("Get all users error:", e);
-      toast.error("Foydalanuvchilarni olishda xato");
-    } finally {
-      setLoading(false);
-    }
+  const handleSelectUser = (user) => {
+    navigate(`/chat/${user._id}`);
   };
 
-  useEffect(() => {
-    getAllUsers();
-  }, []);
-
-  const checkMicrophone = async () => {
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const hasMic = devices.some((device) => device.kind === "audioinput");
-      if (!hasMic) {
-        throw new Error("Mikrofon topilmadi");
-      }
-      return true;
-    } catch (err) {
-      console.error("Microphone check error:", err);
-      toast.error("Mikrofon topilmadi yoki ruxsat berilmagan");
-      return false;
-    }
+  const startTimer = () => {
+    timerRef.current = setInterval(() => {
+      setCallDuration(prev => prev + 1);
+    }, 1000);
   };
 
-  const startMedia = async () => {
-    try {
-      const hasMic = await checkMicrophone();
-      if (!hasMic) {
-        throw new Error("Mikrofon topilmadi");
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: false,
-      });
-      localStreamRef.current = stream;
-      localAudioRef.current.srcObject = stream;
-    } catch (err) {
-      console.error("Microphone permission required!", err);
-      if (err.name === "NotFoundError") {
-        toast.error("Mikrofon topilmadi. Iltimos, mikrofon ulanganligini tekshiring.");
-      } else if (err.name === "NotAllowedError") {
-        toast.error("Mikrofon ruxsati berilmagan. Brauzer sozlamalarida ruxsatni yoqing.");
-      } else {
-        toast.error("Mikrofon bilan bog‘liq xato: " + err.message);
-      }
-      throw err;
+  const stopCall = () => {
+    if (peerConnection) peerConnection.close();
+    setPeerConnection(null);
+    clearInterval(timerRef.current);
+    setCallDuration(0);
+    setStatus("Qo‘ng‘iroq tugatildi");
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((t) => t.stop());
+      localStreamRef.current = null;
     }
+    remoteStreamRef.current = new MediaStream();
+    if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
   };
 
-  const createPeerConnection = () => {
-    const pc = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    });
+  const acceptCall = async (data) => {
+    document.getElementById("my_modal_call").showModal();
+    setStatus("Qabul qilindi");
 
-    localStreamRef.current?.getTracks().forEach((track) => {
-      pc.addTrack(track, localStreamRef.current);
-    });
+    const localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    localStreamRef.current = localStream;
 
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit("webrtc_ice_candidate", {
-          to: selectedUser?._id,
-          candidate: event.candidate,
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        socket.emit("ice_candidate", {
+          to: data.socketId,
+          candidate: e.candidate,
+          from: socket.id,
         });
       }
     };
 
-    pc.ontrack = (event) => {
-      remoteAudioRef.current.srcObject = event.streams[0];
+    pc.ontrack = (e) => {
+      e.streams[0].getTracks().forEach((track) => remoteStreamRef.current.addTrack(track));
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStreamRef.current;
     };
 
-    return pc;
-  };
-
-  const endCall = () => {
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
-
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => track.stop());
-      localStreamRef.current = null;
-    }
-
-    document.getElementById("call_modal").close();
-    setCallStatus("Idle");
-    if (selectedUser) {
-      socket.emit("end_call", { from: user._id, to: selectedUser._id });
-    }
-  };
-
-  const acceptCall = async () => {
-    try {
-      const hasMic = await checkMicrophone();
-      if (!hasMic) {
-        throw new Error("Mikrofon topilmadi");
-      }
-      await startMedia();
-      const pc = createPeerConnection();
-      peerConnectionRef.current = pc;
-      await peerConnectionRef.current.setRemoteDescription(
-        new RTCSessionDescription(selectedUser.offer)
-      );
-      const answer = await peerConnectionRef.current.createAnswer();
-      await peerConnectionRef.current.setLocalDescription(answer);
-      socket.emit("answer_call", { from: user._id, to: selectedUser._id });
-      socket.emit("webrtc_answer", { to: selectedUser._id, sdp: answer });
-      setCallStatus("Qo‘ng‘iroq qabul qilindi");
-    } catch (err) {
-      console.error("Accept call error:", err);
-      if (err.name === "NotFoundError") {
-        toast.error("Mikrofon topilmadi. Iltimos, mikrofon ulanganligini tekshiring.");
-      } else if (err.name === "NotAllowedError") {
-        toast.error("Mikrofon ruxsati berilmagan. Brauzer sozlamalarida ruxsatni yoqing.");
-      } else {
-        toast.error("Qo‘ng‘iroqni qabul qilishda xato: " + err.message);
-      }
-      endCall();
-    }
-  };
-
-  const rejectCall = () => {
-    socket.emit("reject_call", { from: user._id, to: selectedUser._id });
-    endCall();
-    toast.info("Qo‘ng‘iroq rad etildi");
+    setPeerConnection(pc);
+    socket.emit("accept_call", { to: data.socketId, from: socket.id });
+    startTimer();
   };
 
   useEffect(() => {
-    socket.on("users", (data) => {
-      setOnlineUsers(data);
+    socket.on("incoming_call", (data) => {
+      console.log("📞 Incoming call:", data);
+      dispatch(setIncomingCall(data));
     });
 
-    socket.on("Ban_Result_reciever", (data) => {
-      toast.error(data.message);
-      dispatch(logout());
-      navigate("/login");
-    });
+    socket.on("call_ended", stopCall);
 
-    socket.on("admin_notification", (data) => {
-      toast.error(data.message);
-    });
+    socket.on("offer_received", async ({ offer, from }) => {
+      const localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+      localStreamRef.current = localStream;
 
-    socket.on("incoming_call", ({ from, offer, caller }) => {
-      setSelectedUser({ ...caller, offer });
-      setCallStatus("Sizga qo‘ng‘iroq kelyapti...");
-      document.getElementById("call_modal").showModal();
-    });
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      });
+      localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
 
-    socket.on("call_accepted", () => {
-      setCallStatus("Qo‘ng‘iroq qabul qilindi");
-    });
-
-    socket.on("webrtc_answer", async ({ sdp }) => {
-      try {
-        await peerConnectionRef.current.setRemoteDescription(
-          new RTCSessionDescription(sdp)
-        );
-      } catch (err) {
-        console.error("WebRTC answer error:", err);
-        toast.error("WebRTC answer qayta ishlashda xato");
-      }
-    });
-
-    socket.on("webrtc_ice_candidate", async ({ candidate }) => {
-      try {
-        if (peerConnectionRef.current) {
-          await peerConnectionRef.current.addIceCandidate(
-            new RTCIceCandidate(candidate)
-          );
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          socket.emit("ice_candidate", {
+            to: from,
+            candidate: e.candidate,
+            from: socket.id,
+          });
         }
-      } catch (err) {
-        console.error("ICE candidate error:", err);
-        toast.error("ICE kandidatni qo‘shishda xato");
+      };
+
+      pc.ontrack = (e) => {
+        e.streams[0].getTracks().forEach((track) => remoteStreamRef.current.addTrack(track));
+        if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStreamRef.current;
+      };
+
+      await pc.setRemoteDescription(offer);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      socket.emit("make_answer", { to: from, answer, from: socket.id });
+      setPeerConnection(pc);
+      startTimer();
+      document.getElementById("my_modal_call").showModal();
+    });
+
+    socket.on("ice_candidate_received", async ({ candidate }) => {
+      if (peerConnection) {
+        await peerConnection.addIceCandidate(candidate);
       }
-    });
-
-    socket.on("call_ended", () => {
-      endCall();
-      toast.info("Qo‘ng‘iroq yakunlandi");
-    });
-
-    socket.on("call_rejected", ({ message }) => {
-      endCall();
-      toast.error(message);
-    });
-
-    socket.on("call_error", ({ message }) => {
-      endCall();
-      toast.error(message);
     });
 
     return () => {
-      socket.off("users");
-      socket.off("Ban_Result_reciever");
-      socket.off("admin_notification");
       socket.off("incoming_call");
-      socket.off("call_accepted");
-      socket.off("webrtc_answer");
-      socket.off("webrtc_ice_candidate");
+      socket.off("offer_received");
+      socket.off("ice_candidate_received");
       socket.off("call_ended");
-      socket.off("call_rejected");
-      socket.off("call_error");
     };
-  }, [dispatch, navigate, user, selectedUser]);
+  }, [peerConnection]);
 
-  const selectUser = (user) => {
-    setSelectedUser(user);
-    navigate(`/chat/${user._id}`);
-  };
+  const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
-    <div className="flex">
-      <Sidebar
-        onlineUsers={onlineUsers}
-        loading={loading}
-        selectUser={selectUser}
-        setOnlineUsers={setOnlineUsers}
-      />
-      <div className="w-full h-screen overflow-y-auto">
-        <Outlet
-          context={{
-            setIsDrawerOpen,
-            setSelectedUser,
-            selectedUser,
-            isDrawerOpen,
-            endCall,
-          }}
-        />
-      </div>
-      <DrawerUser
-        selectedUser={selectedUser}
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-      />
-      <dialog id="call_modal" className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box">
-          <div className="flex flex-col items-center justify-center">
-            <div className="flex flex-col items-center gap-5">
-              <figure>
-                <img
-                  src={
-                    selectedUser?.profileImage || "https://via.placeholder.com/64"
-                  }
-                  className="size-24 bg-base-300 rounded-full"
-                  alt=""
-                />
-              </figure>
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xl font-semibold">{selectedUser?.username}</p>
-                <p className="text-sm">{callStatus}</p>
+    <div className="flex h-screen">
+      <Sidebar selectUser={handleSelectUser} />
+      <div className="flex-1">
+        {/* Incoming Call Modal */}
+        {incomingCall && (
+          <dialog id="incoming_modal" className="modal modal-bottom sm:modal-middle" open>
+            <div className="modal-box">
+              <h3 className="font-bold text-lg">Qo‘ng‘iroq</h3>
+              <p className="py-4">Sizga {incomingCall.from?.username} dan qo‘ng‘iroq kelyapti</p>
+              <div className="modal-action">
+                <form method="dialog" className="flex gap-3">
+                  <button className="btn btn-success" onClick={() => {
+                    acceptCall(incomingCall);
+                    dispatch(clearIncomingCall());
+                  }}>Qabul qilish</button>
+                  <button className="btn btn-error" onClick={() => {
+                    socket.emit("reject_call", { to: incomingCall.socketId });
+                    dispatch(clearIncomingCall());
+                  }}>Rad etish</button>
+                </form>
               </div>
-              <audio ref={localAudioRef} autoPlay muted />
-              <audio ref={remoteAudioRef} autoPlay />
             </div>
+          </dialog>
+        )}
+
+        {/* Active Call Modal */}
+        <dialog id="my_modal_call" className="modal modal-bottom sm:modal-middle">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Audio qo‘ng‘iroq</h3>
+            <p className="py-2">{status} | {formatTime(callDuration)}</p>
             <div className="modal-action">
               <form method="dialog">
-                {callStatus === "Sizga qo‘ng‘iroq kelyapti..." && (
-                  <>
-                    <button
-                      className="btn btn-soft btn-success mr-2"
-                      onClick={acceptCall}
-                    >
-                      <SlCallOut /> Qabul qilish
-                    </button>
-                    <button
-                      className="btn btn-soft btn-error"
-                      onClick={rejectCall}
-                    >
-                      Rad etish
-                    </button>
-                  </>
-                )}
-                {callStatus !== "Sizga qo‘ng‘iroq kelyapti..." && (
-                  <button
-                    className="btn btn-soft btn-error text-2xl"
-                    onClick={endCall}
-                  >
-                    <MdCallEnd />
-                  </button>
-                )}
+                <button className="btn btn-error" onClick={stopCall}>
+                  <MdCallEnd className="text-xl" />
+                </button>
               </form>
             </div>
+            <audio ref={remoteAudioRef} autoPlay></audio>
           </div>
-        </div>
-      </dialog>
+        </dialog>
+
+        <Outlet />
+      </div>
     </div>
   );
-}
+};
 
 export default App;
