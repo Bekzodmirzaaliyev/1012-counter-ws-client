@@ -170,7 +170,32 @@ const Sidebar = ({ loading, selectUser }) => {
             <span className="loading loading-bars loading-xl"></span>
           </div>
         ) : (
-          renderTabContent()
+          <div className='h-full w-full overflow-y-auto p-2 flex flex-col gap-5'>
+              {onlineUsers?.length > 0 ? (
+                [...onlineUsers]
+                  .sort((a, b) => b.status - a.status) // ✅ онлайн вверх, оффлайн вниз
+                  .map((item, index) => (
+                
+                <div key={index} className={`${item?.role === "owner" ? "shadow-md shadow-error" : item.role === "admin" ? "shadow-md shadow-info" : item?.role === "moderator" ? "shadow-success shadow-md" : item.role === "vip" ? "shadow-md shadow-warning": ""} flex items-center justify-between gap-5 p-2 bg-base-100 rounded-xl cursor-pointer shadow`} onClick={() => selectUser(item)}>
+                  <div className='flex items-center gap-5'>
+                    <img src={item.profileImage || "https://via.placeholder.com/64"} className='size-16 rounded-full object-cover' alt="profile" />
+                    <div className='flex flex-col gap-1'>
+                      <span className='font-bold text-lg'>{item.username.length > 24 ? item.username.slice(0, 24) + "..." : item.username}</span>
+                      <span className={`text-xs font-bold ${item.status ? 'text-success' : 'text-error'}`}>{item.status ? "В сети" : "Не в сети"}</span>
+                    </div>
+                  </div>
+                  <div className='text-sm capitalize '>
+                    {item?.role === "owner" && <p className='text-shadow-md text-error text-shadow-error/80'>{item?.role}</p>}
+                    {item?.role === "admin" && <p className='text-shadow-md text-info text-shadow-info/80'>{item?.role}</p>}
+                    {item?.role === "moderator" && <p className='text-shadow-md text-success text-shadow-success/80'>{item?.role}</p>}
+                    {item?.role === "vip" && <p className='text-shadow-md text-warning text-shadow-warning/80'>{item?.role}</p>}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className='text-center text-sm text-gray-400'>No online users</div>
+            )}
+          </div>
         )}
       </div>
     </div>

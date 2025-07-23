@@ -7,9 +7,9 @@ import { PiTelegramLogo } from "react-icons/pi"
 import socket from "..//Socket.jsx"
 import { IoCall } from "react-icons/io5";
 import { MdCallEnd } from "react-icons/md";
-import DrawerUser from "../components/DrawerUser";
-import Phonecall from '../components/Phonecall.jsx';
-import PhonecallOutgoing from '../components/PhonecallOutgoing.jsx';
+import { FaPhone } from "react-icons/fa";
+import CallModal from "../components/CallModal";
+
 
 const Chat = () => {
   const { user } = useParams();
@@ -249,15 +249,22 @@ const Chat = () => {
           <p className='text-sm'>{selectedUser?.grade}</p>
         </div>
         <div>
-          <button className="btn btn-success" onClick={handleCall}><IoCall /></button>
-          <button className='btn btn-ghost' onClick={() => setIsDrawerOpen(true)}><BsThreeDotsVertical /></button>
+          <button className="btn btn-soft btn-success" onClick={handleCall}><IoCall /></button>
+          <button onClick={() => setIsDrawerOpen(true)} className='btn btn-ghost'>
+            <BsThreeDotsVertical />
+          </button>
+
+          <button className="btn btn-primary" onClick={() => document.getElementById('call_modal').showModal()}>
+            <FaPhone />
+          </button>
         </div>
       </div>
 
-      <div className='flex-1 px-4 overflow-y-auto'>
-        {chat.map((item, idx) => (
-          <div key={idx} className={`chat ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
-            <div className='flex items-end gap-4'>
+      {/* Chat messages */}
+      <div className='flex-1 h-[55%] px-4 overflow-y-auto'>
+        {chat?.map((item, id) => (
+          <div key={id} className={`chat flex flex-col w-full ${item.from === userinfo._id ? "chat-end" : "chat-start"}`}>
+            <div className={`flex items-end gap-4 max-w-[65%] ${item.from === userinfo._id ? "flex-row-reverse" : "flex-row"}`}>
               <figure>
                 <img src={selectedUser?.profileImage} alt="" className='size-10 rounded-full' />
               </figure>
@@ -270,7 +277,8 @@ const Chat = () => {
         ))}
       </div>
 
-      <div className='p-5 bg-base-300 flex gap-2'>
+      {/* Message input */}
+      <div className='w-full py-5 px-5 bg-base-300 flex gap-2'>
         <input
           type="text"
           value={inputValue}
