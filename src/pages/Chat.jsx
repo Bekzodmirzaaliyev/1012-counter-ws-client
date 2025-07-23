@@ -10,7 +10,7 @@ import { MdCallEnd } from "react-icons/md";
 
 const Chat = () => {
   const { user } = useParams();
-  const userinfo = useSelector(state => state.auth.user.user);
+  const userinfo = useSelector(state => state.auth?.user?.user);
   const [selectedUser, setSelectedUser] = useState(null);
   const [chat, setChat] = useState([]);
   const [inputValue, setInputValue] = useState("");
