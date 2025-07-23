@@ -4,11 +4,9 @@ import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { BsThreeDotsVertical } from "react-icons/bs"
 import { PiTelegramLogo } from "react-icons/pi"
-import socket from "../Socket.jsx"
-import DrawerUser from "../components/DrawerUser"
+import socket from "..//Socket.jsx"
 import { IoCall } from "react-icons/io5";
 import { MdCallEnd } from "react-icons/md";
-import socket from "../Socket.jsx";
 import DrawerUser from "../components/DrawerUser";
 import Phonecall from '../components/Phonecall.jsx';
 import PhonecallOutgoing from '../components/PhonecallOutgoing.jsx';

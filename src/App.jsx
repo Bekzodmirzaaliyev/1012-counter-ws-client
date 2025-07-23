@@ -119,9 +119,7 @@ const App = () => {
       pc.ontrack = (e) => {
         e.streams[0].getTracks().forEach((track) => remoteStreamRef.current.addTrack(track));
         if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStreamRef.current;
-      };
-
-      await pc.setRemoteDescription(offer);
+      };await pc.setRemoteDescription(offer);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
 
@@ -144,7 +142,7 @@ const App = () => {
       socket.off("call_ended");
     };
   }, [peerConnection]);
-
+  
   const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
