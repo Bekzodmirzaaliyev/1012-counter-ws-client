@@ -1,132 +1,182 @@
-import { useEffect, useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import socket from './Socket.jsx'
-import Sidebar from './components/Sidebar.jsx'
-import DrawerUser from './components/DrawerUser.jsx'
-import { toast } from 'react-toastify';
-import { logout } from './redux/slices/authSlice.js'
-import { IoCall } from "react-icons/io5";
-import { SlCallOut } from "react-icons/sl";
-import { VscCallIncoming } from "react-icons/vsc";
+// ✅ App.jsx with full call logic + userinfo emit + Sidebar support restored
+import React, { useEffect, useRef, useState } from "react";
+import { Outlet } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import socket from "./Socket";
+import Sidebar from "./Components/Sidebar";
+import IncomingCallModal from "./components/IncomingCallModal";
+import { setIncomingCall, clearIncomingCall } from "./redux/slices/callSlice";
+import { MdCallEnd } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 
-function App() {
-  const [onlineUsers, setOnlineUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [users, setUsers] = useState([])
-  const [status, setStatus] = useState("Вам вызов...")
-  const [selectedUser, setSelectedUser] = useState(null) // ✅ Drawer uchun user
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false) // ✅ Drawer ochiqmi yo‘qmi
-  const user = useSelector(state => state.auth?.user?.user)
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+const App = () => {
 
-  useEffect(() => {
-    if (!user) return
-    socket.emit("connected", user)
+  const dispatch = useDispatch();
+  const userinfo = useSelector((state) => state?.auth?.user?.user);
+  const incomingCall = useSelector((state) => state.call.incomingCall);
+  const navigate = useNavigate();
 
 
-  }, [user])
 
-  const getAllUsers = async () => {
-    try {
-      const request = await fetch('https://one012-counter-ws-server.onrender.com/api/v1/auth/getAllUsers')
-      const response = await request.json()
-      setUsers(response)
-    } catch (e) {
-      console.log(e)
-    } finally {
-      setLoading(false)
+  const [peerConnection, setPeerConnection] = useState(null);
+  const [callDuration, setCallDuration] = useState(0);
+  const [status, setStatus] = useState("Qo‘ng‘iroq...");
+
+  const timerRef = useRef(null);
+  const localStreamRef = useRef(null);
+  const remoteStreamRef = useRef(new MediaStream());
+  const remoteAudioRef = useRef(null);
+
+  const handleSelectUser = (user) => {
+    navigate(`/chat/${user._id}`);
+  };
+
+  const startTimer = () => {
+    timerRef.current = setInterval(() => {
+      setCallDuration((prev) => prev + 1);
+    }, 1000);
+  };
+
+  const stopCall = () => {
+    if (peerConnection) peerConnection.close();
+    setPeerConnection(null);
+    clearInterval(timerRef.current);
+    setCallDuration(0);
+    setStatus("Qo‘ng‘iroq tugatildi");
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((t) => t.stop());
+      localStreamRef.current = null;
     }
-  }
+    remoteStreamRef.current = new MediaStream();
+    if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+  };
+
+  const acceptCall = async (data) => {
+    document.getElementById("my_modal_call").showModal();
+    setStatus("Ulanmoqda...");
+
+    const localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+    localStreamRef.current = localStream;
+
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
+    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        socket.emit("ice_candidate", {
+          to: data.socketId,
+          candidate: e.candidate,
+          from: socket.id,
+        });
+      }
+    };
+
+    pc.ontrack = (e) => {
+      e.streams[0].getTracks().forEach((track) => remoteStreamRef.current.addTrack(track));
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStreamRef.current;
+    };
+
+    setPeerConnection(pc);
+    socket.emit("accept_call", { to: data.socketId, from: socket.id });
+    startTimer();
+  };
 
   useEffect(() => {
-    getAllUsers()
-  }, [])
-
-  const selectUser = (user) => {
-    navigate(`/chat/${user._id}`)
-  }
+    if (userinfo) {
+      socket.emit("connected", userinfo);
+    }
+  }, [userinfo]);
 
   useEffect(() => {
-    socket.on("admin_notification")
-    socket.on("BanResult", (data) => {
-      console.log(data)
-      toast.error(data.message)
-    })
-    socket.on("admin_notification", (data) => {
-      console.log(data)
-      toast.error(data.message)
-    })
-    socket.on("Ban_Result_reciever", (data) => {
-      console.log("ban-result", data)
-      toast.error(data.message)
-      dispatch(logout())
-    })
+    socket.on("incoming_call", (data) => {
+      console.log("📞 Incoming call:", data);
+      dispatch(setIncomingCall(data));
+    });
+
+    socket.on("call_ended", stopCall);
+
+    socket.on("offer_received", async ({ offer, from }) => {
+      const localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+      localStreamRef.current = localStream;
+
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      });
+      localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+      pc.onicecandidate = (e) => {
+        if (e.candidate) {
+          socket.emit("ice_candidate", {
+            to: from,
+            candidate: e.candidate,
+            from: socket.id,
+          });
+        }
+      };
+
+      pc.ontrack = (e) => {
+        e.streams[0].getTracks().forEach((track) => remoteStreamRef.current.addTrack(track));
+        if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStreamRef.current;
+      };
+
+      await pc.setRemoteDescription(offer);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      socket.emit("make_answer", { to: from, answer, from: socket.id });
+      setPeerConnection(pc);
+      startTimer();
+      document.getElementById("my_modal_call").showModal();
+    });
+
+    socket.on("ice_candidate_received", async ({ candidate }) => {
+      if (peerConnection) {
+        await peerConnection.addIceCandidate(candidate);
+      }
+    });
 
     return () => {
-      socket.off("admin_notification")
-      socket.off("BanResult")
-    }
-  })
+      socket.off("incoming_call");
+      socket.off("offer_received");
+      socket.off("ice_candidate_received");
+      socket.off("call_ended");
+    };
+  }, [peerConnection]);
+
+  const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
-    <div className='flex'>
-      <Sidebar
-        onlineUsers={onlineUsers}
-        loading={loading}
-        selectUser={selectUser}
-        setOnlineUsers={setOnlineUsers}
-      />
-      <div className='w-9/12 h-screen overflow-y-auto'>
-        {/* 🧠 Drawer control proplarini Outlet'ga yuborish */}
-        <Outlet
+    <div className="flex h-screen">
+      <Sidebar selectUser={handleSelectUser} />
 
-          context={{
-            setIsDrawerOpen,
-            setSelectedUser,
-            selectedUser,
-            isDrawerOpen,
-           
+
+      <div className="flex-1">
+        <IncomingCallModal
+          onAccept={(data) => {
+            dispatch(clearIncomingCall());
+            acceptCall(data);
           }}
         />
-      </div>
-      <div>
-        <DrawerUser
-          selectedUser={selectedUser}
-          isOpen={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-        />
-      </div>
-      <div>  {/* Open the modal using document.getElementById('ID').showModal() method */}
-        <button className="btn btn-soft btn-success" onClick={() => document.getElementById('my_modal_6').showModal()}><IoCall /></button>
-        <dialog id="my_modal_6" className="modal modal-bottom sm:modal-middle">
-          <div className="modal-box bg-accent/40 min-w-[65%] min-h-[70vh]">
-            <div className='flex flex-col items-center justify-center h-full w-full'>
-              <div className='flex flex-col items-center gap-5 w-full h-full'>
-                <figure> <img src={selectedUser?.profileImage || "https://via.placeholder.com/64"} className='size-24 bg-base-300 rounded-full' alt="" /></figure>
-                <div className='flex flex-col items-center gap-1'>
-                  <p className='text-xl font-semibold'>{selectedUser?.username || "Username"}</p>
-                  <p className='text-sm'>{status}</p>
-                </div>
-              </div>
-              <div className="modal-action">
-                <form method="dialog" className='flex gap-5'>
-                  {/* if there is a button in form, it will close the modal */}
-                  <button className="btn btn-soft btn-success text-2xl"><SlCallOut />
-                  </button>
-                  <button className="btn btn-soft btn-error text-2xl"><VscCallIncoming />
-                  </button>
-                </form>
-              </div>
 
+        <dialog id="my_modal_call" className="modal modal-bottom sm:modal-middle">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Audio qo‘ng‘iroq</h3>
+            <p className="py-2">{status} | {formatTime(callDuration)}</p>
+            <div className="modal-action">
+              <form method="dialog">
+                <button className="btn btn-error" onClick={stopCall}><MdCallEnd className="text-xl" /></button>
+              </form>
             </div>
-
+            <audio ref={remoteAudioRef} autoPlay></audio>
           </div>
         </dialog>
+
+        <Outlet />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
