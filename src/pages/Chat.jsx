@@ -1,12 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { BsThreeDotsVertical } from "react-icons/bs";
-import { PiTelegramLogo } from "react-icons/pi";
-import socket from "../Socket";
-import DrawerUser from "../components/DrawerUser";
+// ✅ Full call logic implemented in this component with incoming call modal, timer, and cleanup
+import React, { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
+import { BsThreeDotsVertical } from "react-icons/bs"
+import { PiTelegramLogo } from "react-icons/pi"
+import socket from "..//Socket.jsx"
 import { IoCall } from "react-icons/io5";
 import { MdCallEnd } from "react-icons/md";
+import DrawerUser from "../components/DrawerUser";
+import Phonecall from '../components/Phonecall.jsx';
+import PhonecallOutgoing from '../components/PhonecallOutgoing.jsx';
 
 const Chat = () => {
   const { user } = useParams();
@@ -19,13 +22,14 @@ const Chat = () => {
   const [isCalling, setIsCalling] = useState(false);
   const [incomingCall, setIncomingCall] = useState(null);
   const [callDuration, setCallDuration] = useState(0);
-
+  const [Loading, setLoading] = useState(false)
   const peerConnectionRef = useRef(null);
   const timerRef = useRef(null);
   const localStreamRef = useRef(null);
   const remoteStreamRef = useRef(new MediaStream());
   const audioRef = useRef(null);
 
+  // Socket event listeners
   useEffect(() => {
     const fetchUser = async () => {
       const res = await fetch(`http://localhost:8000/api/v1/auth/getUser/${user}`);
@@ -86,6 +90,36 @@ const Chat = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setLoading(true);
+    const getUser = async () => {
+      try {
+        const res = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/auth/getUser/${user}`);
+        const data = await res.json();
+        setSelectedUser(data);
+      } catch (err) {
+        console.log("getUser error:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    getUser();
+  }, [user]);
+
+  useEffect(() => {
+    const getChat = async () => {
+      try {
+        const res = await fetch(`https://one012-counter-ws-server.onrender.com/api/v1/message/${userinfo._id}/${user}`);
+        const data = await res.json();
+        setChat(data);
+      } catch (err) {
+        console.log("getChat error:", err);
+      }
+    }
+    getChat();
+  }, [user]);
+
+  // Message handlers
   const sendMessage = (e) => {
     e.preventDefault();
     const msg = {
@@ -249,14 +283,24 @@ const Chat = () => {
 
       {/* Calling Modal */}
       <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box text-center">
-          <img src={selectedUser?.profileImage} alt="" className='size-20 rounded-full mx-auto' />
-          <p className='text-xl font-semibold mt-3'>{selectedUser?.username}</p>
-          <p className='text-sm'>{status} | {formatTime(callDuration)}</p>
-          <div className="modal-action justify-center">
-            <form method="dialog">
-              <button className="btn btn-error" onClick={stopCall}><MdCallEnd className='text-2xl' /></button>
-            </form>
+        <div className="modal-box">
+          <div className='flex flex-col items-center justify-center'>
+            <div className='flex flex-col items-center gap-5'>
+              <figure>
+                <img src={selectedUser?.profileImage || "https://via.placeholder.com/64"} className='size-24 bg-base-300 rounded-full' alt="" />
+              </figure>
+              <div className='flex flex-col items-center gap-1'>
+                <p className='text-xl font-semibold'>{selectedUser?.username}</p>
+                <p className='text-sm'>{status} | {formatTime(callDuration)}</p>
+              </div>
+            </div>
+            
+            <div className="modal-action">
+              <form method="dialog">
+                <button className="btn btn-soft btn-error text-2xl" onClick={stopCall}><MdCallEnd /></button>
+              </form>
+            </div>
+            <audio ref={audioRef} autoPlay></audio>
           </div>
           <audio ref={audioRef} autoPlay />
         </div>
