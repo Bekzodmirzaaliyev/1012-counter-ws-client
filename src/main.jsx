@@ -13,7 +13,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { Provider } from 'react-redux';
 import PrivateRouter from './guard/PrivateRouter.jsx'
 import Chat from "./pages/Chat.jsx"
-  import { ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 
 const router = createBrowserRouter([
   {

@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import Sidebar from "./Components/Sidebar";
+import Sidebar from "./components/Sidebar";
 import socket from "./Socket";
 import { setIncomingCall, clearIncomingCall } from "./redux/slices/callSlice";
 import { MdCallEnd } from "react-icons/md";
