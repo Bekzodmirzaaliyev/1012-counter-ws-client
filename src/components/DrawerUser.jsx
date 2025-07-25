@@ -82,14 +82,14 @@ const DrawerUser = ({ selectedUser, isOpen, onClose }) => {
                 <div className="text-center py-2">Админ Панель</div>
                 <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-1 rounded-xl p-4 shadow-xl border-primary">
                   <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "admin" })}>Назначить Админстратором</button>
-                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "moderator" })}>Назначить Модератор</button>
-                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "vip" })}>Назначить VIP</button>
-                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeAdmin({ userID: user._id, selectedUser: selectedUser._id, role: "user" })}>Понизить до Пользователя</button>
+                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeModerator({ userID: user._id, selectedUser: selectedUser._id, role: "moderator" })}>Назначить Модератор</button>
+                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeVIP({ userID: user._id, selectedUser: selectedUser._id, role: "vip" })}>Назначить VIP</button>
+                  <button className="btn btn-soft btn-primary btn-xs flex-1 text-nowrap" onClick={() => makeUser({ userID: user._id, selectedUser: selectedUser._id, role: "user" })}>Понизить до Пользователя</button>
                 </div>
 
                 <div className="mt-5 border-y py-2 space-y-2 flex justify-center flex-wrap gap-2 rounded-xl p-4 shadow-xl border-error">
                   <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleBan({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Заблокировать</button>
-                  <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap">Предупреждение</button>
+                  <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleWarn({ userID: user._id, selectedUser: selectedUser._id, reason: "Abdulahm" })}>Предупреждение</button>
                   <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleMute({ userID: user._id, selectedUser: selectedUser._id })}>Заглушить</button>
                   <button className="btn btn-soft btn-error btn-xs flex-1 text-nowrap" onClick={() => handleKick({ userID: user._id, selectedUser: selectedUser._id })}>Выгнать из сайта</button>
                 </div>
