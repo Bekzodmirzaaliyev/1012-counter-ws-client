@@ -54,7 +54,7 @@ const PersistLoading = () => (
 
 // Page-specific loading komponenti - kattaroq va yaxshiroq
 const PageLoading = () => (
-  <div className="flex items-center justify-center min-h-[70vh]">
+  <div className="flex items-center justify-center min-h-screen">
     <div className="text-center">
       <div className="relative mb-6">
         <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto"></div>
