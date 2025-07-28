@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../redux/slices/authSlice";
-import { FaLock, FaEnvelope } from "react-icons/fa";
+import { FaLock, FaEnvelope, FaEye, FaEyeSlash } from "react-icons/fa";
+import { HiSparkles } from "react-icons/hi2";
 import { toast } from "react-toastify";
 
 const illustration = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwoOybZyR8PaEZi9DSPbDYOd4HYLctFEvd2w&s";
@@ -11,6 +12,8 @@ export default function Login() {
   const isAuth = useSelector(state => state.auth.isAuth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -22,6 +25,8 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    
     try {
       const request = await fetch("https://one012-counter-ws-server.onrender.com/api/v1/auth/login", {
         method: "POST",
@@ -51,52 +56,120 @@ export default function Login() {
     } catch (e) {
       console.log("Error: ", e);
       toast.error("❌ Server bilan ulanishda xatolik");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-sky-100 to-blue-200 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl flex w-full max-w-5xl overflow-hidden">
-        <div className="w-1/2 hidden md:flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
-          <img src={illustration} alt="login" className="w-4/5" />
+    <div className="min-h-screen bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center p-4">
+      <div className="card w-full max-w-6xl bg-base-100 shadow-2xl">
+        <div className="card-body p-0">
+          <div className="flex flex-col lg:flex-row">
+            {/* Left side - Illustration */}
+            <div className="lg:w-1/2 bg-gradient-to-br from-primary/20 to-secondary/20 p-12 flex flex-col items-center justify-center">
+              <div className="text-center space-y-6">
+                <div className="relative inline-block">
+                  <img 
+                    src={illustration} 
+                    alt="login" 
+                    className="w-72 h-72 object-contain" 
+                  />
+                  <div className="absolute -top-4 -right-4">
+                    <HiSparkles className="text-2xl text-warning animate-pulse" />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-3xl font-bold text-primary">Welcome Back!</h3>
+                  <p className="text-base-content/70 text-lg leading-relaxed max-w-md">
+                    Connect with your friends and colleagues in our modern, secure chat platform.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right side - Login form */}
+            <div className="lg:w-1/2 p-12">
+              <form className="space-y-8" onSubmit={handleSubmit}>
+                <div className="text-center space-y-2">
+                  <h2 className="text-4xl font-bold text-primary">
+                    Sign In
+                  </h2>
+                  <p className="text-base-content/60">Enter your credentials to access your account</p>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Email Input */}
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-medium">Email Address</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        placeholder="Enter your email"
+                        className="input input-bordered w-full pl-12 focus:input-primary transition-all duration-300"
+                      />
+                      <FaEnvelope className="absolute left-4 top-1/2 transform -translate-y-1/2 text-base-content/40" />
+                    </div>
+                  </div>
+
+                  {/* Password Input */}
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-medium">Password</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        placeholder="Enter your password"
+                        className="input input-bordered w-full pl-12 pr-12 focus:input-primary transition-all duration-300"
+                      />
+                      <FaLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-base-content/40" />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="btn btn-ghost btn-sm absolute right-2 top-1/2 transform -translate-y-1/2"
+                      >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className={`btn btn-primary w-full text-lg ${isLoading ? 'loading' : ''}`}
+                >
+                  {isLoading ? 'Signing in...' : 'Sign In'}
+                </button>
+
+                {/* Register Link */}
+                <div className="text-center">
+                  <p className="text-base-content/60">
+                    Don't have an account?{' '}
+                    <Link 
+                      to="/register" 
+                      className="link link-primary font-medium"
+                    >
+                      Create one here
+                    </Link>
+                  </p>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
-        <form className="w-full md:w-1/2 p-10 flex flex-col gap-6" onSubmit={handleSubmit}>
-          <h2 className="text-3xl font-bold text-center text-gray-800">Вход в систему</h2>
-
-          <div className="flex items-center border border-gray-300 p-3 rounded-xl shadow-sm bg-gray-50">
-            <FaEnvelope className="mr-3 text-gray-500" />
-            <input
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="Email"
-              className="w-full outline-none bg-transparent text-base-100"
-            />
-          </div>
-
-          <div className="flex items-center border border-gray-300 p-3 rounded-xl shadow-sm bg-gray-50">
-            <FaLock className="mr-3 text-gray-500" />
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Пароль"
-              className="w-full outline-none bg-transparent text-base-100"
-            />
-          </div>
-
-          <button type="submit" className="btn bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 font-semibold">
-            Войти
-          </button>
-
-          <p className="text-center text-sm text-gray-500">
-            Нет аккаунта? <Link to="/register" className="text-indigo-600 hover:underline">Зарегистрируйтесь</Link>
-          </p>
-        </form>
       </div>
     </div>
   );
