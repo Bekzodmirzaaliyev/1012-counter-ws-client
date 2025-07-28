@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import Register from "./pages/Register.jsx"
 import Login from "./pages/Login.jsx"
+import ErrorPage from "./pages/ErrorPage.jsx" // Add this import
 import {
   createBrowserRouter,
   RouterProvider,
@@ -21,25 +22,31 @@ const router = createBrowserRouter([
     element: <PrivateRouter>
       <App />
     </PrivateRouter>,
+    errorElement: <ErrorPage />, // Root level error boundary
     children: [
       {
         path: "/chat/:user",
-        element: <Chat />
+        element: <Chat />,
+        errorElement: <ErrorPage /> // Child route error boundary
       }
     ]
   },
   {
     path: "/register",
-    element: <Register />
+    element: <Register />,
+    errorElement: <ErrorPage />
   },
   {
     path: "/login",
-    element: <Login />
+    element: <Login />,
+    errorElement: <ErrorPage />
+  },
+  // Catch-all route for 404 errors
+  {
+    path: "*",
+    element: <ErrorPage />
   }
 ]);
-
-// isAuth = false
-
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

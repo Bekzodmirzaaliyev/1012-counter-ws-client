@@ -204,7 +204,7 @@ const Chat = () => {
     `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
 
   return (
-    <div className='flex flex-col h-screen'>
+    <div className='flex flex-col h-screen overflow-hidden'>
       <DrawerUser selectedUser={selectedUser} isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
       <div className='w-full p-5 bg-base-300 flex items-center justify-between'>
         <div>
