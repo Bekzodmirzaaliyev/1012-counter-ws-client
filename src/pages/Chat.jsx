@@ -344,7 +344,6 @@ const Chat = () => {
                 </button>
               </form>
             </div>
-            <audio ref={audioRef} autoPlay></audio>
           </div>
         </div>
       </dialog>
@@ -384,7 +383,7 @@ const Chat = () => {
         </div>
       </dialog>
     </div>
-  );
-};
+  )
+}
 
-export default Chat;
+export default Chat
