@@ -221,9 +221,6 @@ const Sidebar = ({ loading, selectUser }) => {
 
           <h1 className="text-lg font-bold text-base-content">Чаты</h1>
 
-          <button className="btn btn-ghost btn-sm">
-            <HiDotsVertical />
-          </button>
         </div>
 
 

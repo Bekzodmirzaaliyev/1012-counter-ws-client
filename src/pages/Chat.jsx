@@ -206,7 +206,7 @@ const Chat = () => {
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-br-md" 
                       : "bg-white/10 text-white rounded-bl-md"
                   }`}>
-                    <p className="break-words whitespace-pre-line">{item.text}</p>
+                    <p className="break-words whitespace-pre-line max-w-lg">{item.text}</p>
                   </div>
                   <p className={`text-xs mt-1 px-2 ${item.from === userinfo._id ? "text-right" : "text-left"} text-gray-400`}>
                     {item?.timeStamp?.slice(11, 16)}
